@@ -524,7 +524,7 @@ const handleSubmit = async (e) => {
                   <option value="">Select headphones</option>
                   {headphones.map((headphones, index) => (
                     <option key={index} value={headphones.headphone}>
-                      {headphones.headphones}
+                      {headphones.headphone}
                     </option>
                   ))}
                 </select>
