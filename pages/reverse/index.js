@@ -60,13 +60,12 @@ export default function Home() {
 
   useEffect(() => {
     fetchClients();
-    fetchDocuments();
     fetchCounters();
     fetchComputers();
     fetchMonitors();
     fetchHeadphones();
     
-  }, []);
+  }, []); 
 
   useEffect(() => {
     setFilteredClients(
@@ -85,8 +84,7 @@ export default function Home() {
         throw new Error('Failed to fetch clients');
       }
       const data = await response.json();
-      setComputers(data);
-      console.log(computers)
+      setComputers(data); 
     } catch (error) {
       console.error('Error fetching clients:', error);
     }
@@ -133,18 +131,7 @@ export default function Home() {
     }
   };
 
-  const fetchDocuments = async () => {
-    try {
-      const response = await fetch('/api/reverse/list-documents');
-      if (!response.ok) {
-        throw new Error('Failed to fetch documents');
-      }
-      const data = await response.json();
-      setDocuments(data);
-    } catch (error) {
-      console.error('Error fetching documents:', error);
-    }
-  };
+  
 
   const fetchCounters = async () => {
     try {
@@ -198,17 +185,7 @@ export default function Home() {
     }
   };
 
-  const handlePreview = async (filename) => { 
-  try {
-    const response = await fetch(`/uploads/${filename}`);
-    const arrayBuffer = await response.arrayBuffer();
-    const result = await Mammoth.convertToHtml({ arrayBuffer });
-    setPreviewContent(result.value);
-    setIsModalOpen(true);
-  } catch (error) {
-    console.error('Error previewing document:', error);
-  }
-};
+ 
 
 
 const handleReturned = async (client) => {
@@ -338,11 +315,10 @@ const handleReturned = async (client) => {
             throw new Error(`Failed to upload file (${uploadResponse.status})`);
           }
 
-          const uploadData = await uploadResponse.json();
-          console.log(uploadData.message);
+          const uploadData = await uploadResponse.json(); 
 
           saveAs(generatedBlob, formData.documentName);
-          fetchDocuments();
+          
 
           setReverseData({
             candidateName: '',
@@ -541,7 +517,7 @@ const handleReturned = async (client) => {
                   <option value="">Select headphones</option>
                   {headphones.map((headphones, index) => (
                     <option key={index} value={headphones.headphone}>
-                      {headphones.headphones}
+                      {headphones.headphone}
                     </option>
                   ))}
                 </select>
@@ -579,31 +555,7 @@ const handleReturned = async (client) => {
           </form>
         </div>
 
-        <div className="middle-docx">
-          <h2>Document List</h2>
-          <input
-            type="text"
-            placeholder="Search documents..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <ul>
-            {filteredDocuments.map((filename, index) => (
-              <li key={index} className="per-li">
-                {filename}
-                <div className="btn-prev">
-                <button onClick={() => handlePreview(filename)}>
-                  <FaEye /> 
-                </button>
-                <button onClick={() => handleDelete(filename)}>
-                  <FaTrashAlt /> 
-                </button>
-                </div>
-              </li>
-            ))}
-</ul>
-
-        </div>
+        
 
         
 <div className="right-docx">
