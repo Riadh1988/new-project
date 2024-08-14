@@ -602,14 +602,14 @@ p {
 }
 
 .left-docx {
-  width: 30%;
+  width: 40%;
 }
 
 .middle-docx, .right-docx {
-  width: 30%;
+  width: 40%;
 }
 .extra-docx {
-  width: 10%;
+  width: 20%;
 }
 ul{
   list-style: none;
