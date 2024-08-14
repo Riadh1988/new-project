@@ -9,7 +9,7 @@ export const sendEmail = async ({ to, subject, text, html }) => {
       pass: process.env.EMAIL_PASS, // Your email password or app password
     },
   });
-
+console.log()
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to,
