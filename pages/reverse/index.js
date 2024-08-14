@@ -60,12 +60,13 @@ export default function Home() {
 
   useEffect(() => {
     fetchClients();
+    fetchDocuments();
     fetchCounters();
     fetchComputers();
     fetchMonitors();
     fetchHeadphones();
     
-  }, []); 
+  }, []);
 
   useEffect(() => {
     setFilteredClients(
@@ -84,7 +85,8 @@ export default function Home() {
         throw new Error('Failed to fetch clients');
       }
       const data = await response.json();
-      setComputers(data); 
+      setComputers(data);
+      console.log(computers)
     } catch (error) {
       console.error('Error fetching clients:', error);
     }
@@ -131,7 +133,18 @@ export default function Home() {
     }
   };
 
-  
+  const fetchDocuments = async () => {
+    try {
+      const response = await fetch('/api/reverse/list-documents');
+      if (!response.ok) {
+        throw new Error('Failed to fetch documents');
+      }
+      const data = await response.json();
+      setDocuments(data);
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+    }
+  };
 
   const fetchCounters = async () => {
     try {
@@ -185,7 +198,17 @@ export default function Home() {
     }
   };
 
- 
+  const handlePreview = async (filename) => { 
+  try {
+    const response = await fetch(`/uploads/${filename}`);
+    const arrayBuffer = await response.arrayBuffer();
+    const result = await Mammoth.convertToHtml({ arrayBuffer });
+    setPreviewContent(result.value);
+    setIsModalOpen(true);
+  } catch (error) {
+    console.error('Error previewing document:', error);
+  }
+};
 
 
 const handleReturned = async (client) => {
@@ -244,134 +267,118 @@ const handleReturned = async (client) => {
 
 
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    try {
-      const formData = {
-        candidateName: reverseData.candidateName,
-        lastName: reverseData.lastName,
-        wks: reverseData.wks,
-        computer: reverseData.computer,
-        computerSerial: reverseData.computerSerial,
-        monitorChecked: reverseData.monitorChecked,
-        monitor: reverseData.monitor === reverseData.monitor ? reverseData.monitor : 'Ne',
-        monitorSerial: reverseData.monitorSerial,
-        headphonesChecked: reverseData.headphonesChecked,
-        headphones: reverseData.headphones === reverseData.headphones ? reverseData.headphones : 'Ne',
-        mouse: reverseData.mouse === 'yes' ? 'Da' : 'Ne',
-        keyboard: reverseData.keyboard === 'yes' ? 'Da' : 'Ne',
-        date: new Date().toLocaleDateString('en-GB'),
-        documentName: `${reverseData.candidateName} ${reverseData.lastName}-reverse.docx`,
-      };
+  try {
+    const formData = {
+      candidateName: reverseData.candidateName,
+      lastName: reverseData.lastName,
+      wks: reverseData.wks,
+      computer: reverseData.computer,
+      computerSerial: reverseData.computerSerial,
+      monitorChecked: reverseData.monitorChecked,
+      monitor: reverseData.monitor === reverseData.monitor ? reverseData.monitor : 'Ne',
+      monitorSerial: reverseData.monitorSerial,
+      headphonesChecked: reverseData.headphonesChecked,
+      headphones: reverseData.headphones === reverseData.headphones ? reverseData.headphones : 'Ne',
+      mouse: reverseData.mouse === 'yes' ? 'Da' : 'Ne',
+      keyboard: reverseData.keyboard === 'yes' ? 'Da' : 'Ne',
+      date: new Date().toLocaleDateString('en-GB'),
+      documentName: `${reverseData.candidateName} ${reverseData.lastName}-reverse.docx`,
+    };
 
-      const response = await fetch('/api/reverse/submit-form', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+    const response = await fetch('/api/reverse/submit-form', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    });
 
-      if (!response.ok) {
-        throw new Error(`Failed to save form data (${response.status})`);
-      }
-
-      const data = await response.json(); 
-
-      setClients(prevClients => [...prevClients, data]);
-      fetchClients();
-
-      const templatePath = '/1.docx';
-      const templateResponse = await fetch(templatePath);
-      if (!templateResponse.ok) {
-        throw new Error(`Failed to fetch template file (${templateResponse.status})`);
-      }
-      const templateBlob = await templateResponse.blob();
-
-      const reader = new FileReader();
-      reader.onload = async () => {
-        try {
-          const content = reader.result;
-          const zip = new PizZip(content);
-          const doc = new Docxtemplater(zip);
-
-          doc.setData(formData);
-          doc.render();
-          const generatedBlob = doc.getZip().generate({ type: 'blob' });
-
-          const uploadFormData = new FormData();
-          uploadFormData.append('file', new File([generatedBlob], formData.documentName));
-          uploadFormData.append('candidateName', reverseData.candidateName);
-          uploadFormData.append('lastName', reverseData.lastName);
-          
-
-          const uploadResponse = await fetch('/api/reverse/upload', {
-            method: 'POST',
-            body: uploadFormData,
-          });
-
-          if (!uploadResponse.ok) {
-            throw new Error(`Failed to upload file (${uploadResponse.status})`);
-          }
-
-          const uploadData = await uploadResponse.json(); 
-
-          saveAs(generatedBlob, formData.documentName);
-          
-
-          setReverseData({
-            candidateName: '',
-            lastName: '',
-            wks: '',
-            computer: '',
-            computerSerial: '',
-            monitorChecked: false,
-            monitor: '',
-            monitorSerial: '',
-            headphonesChecked: false,
-            headphones: '',
-            mouse: 'no',
-            keyboard: 'no',
-          });
-
-          const counterUpdates = {
-            monitor: formData.monitor ? 1 : 0,
-            headphones: formData.headphones ? 1 : 0,
-            mouse: formData.mouse === 'Da' ? 1 : 0,
-            keyboard: formData.keyboard === 'Da' ? 1 : 0,
-            computer: 0,
-          laptop: 0,
-          };
-          if (reverseData.wks.startsWith('OCS-WKS')) {
-            counterUpdates.computer += 1;
-          } else if (reverseData.wks.startsWith('OCS-LAP')) {
-            counterUpdates.laptop += 1;
-          }
-          const counterResponse = await fetch('/api/reverse/update-counters', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(counterUpdates),
-          });
-      
-          if (!counterResponse.ok) {
-            throw new Error('Failed to update counters');
-          }
-      
-          fetchCounters();
-      
-        } catch (error) {
-          console.error('Error submitting form:', error);
-        }
-      };
-      reader.readAsBinaryString(templateBlob);
-
-    } catch (error) {
-      console.error('Error submitting form:', error);
+    if (!response.ok) {
+      throw new Error(`Failed to save form data (${response.status})`);
     }
-  };
+
+    const data = await response.json();
+
+    setClients((prevClients) => [...prevClients, data]);
+    fetchClients();
+
+    const templatePath = '/1.docx';
+    const templateResponse = await fetch(templatePath);
+    if (!templateResponse.ok) {
+      throw new Error(`Failed to fetch template file (${templateResponse.status})`);
+    }
+    const templateBlob = await templateResponse.blob();
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const content = reader.result;
+        const zip = new PizZip(content);
+        const doc = new Docxtemplater(zip);
+
+        doc.setData(formData);
+        doc.render();
+        const generatedBlob = doc.getZip().generate({ type: 'blob' });
+
+        // Remove the upload part to the public folder
+        // Now only saving the generated document to the user’s local system
+        saveAs(generatedBlob, formData.documentName);
+        fetchDocuments();
+
+        setReverseData({
+          candidateName: '',
+          lastName: '',
+          wks: '',
+          computer: '',
+          computerSerial: '',
+          monitorChecked: false,
+          monitor: '',
+          monitorSerial: '',
+          headphonesChecked: false,
+          headphones: '',
+          mouse: 'no',
+          keyboard: 'no',
+        });
+
+        const counterUpdates = {
+          monitor: formData.monitor ? 1 : 0,
+          headphones: formData.headphones ? 1 : 0,
+          mouse: formData.mouse === 'Da' ? 1 : 0,
+          keyboard: formData.keyboard === 'Da' ? 1 : 0,
+          computer: 0,
+          laptop: 0,
+        };
+        if (reverseData.wks.startsWith('OCS-WKS')) {
+          counterUpdates.computer += 1;
+        } else if (reverseData.wks.startsWith('OCS-LAP')) {
+          counterUpdates.laptop += 1;
+        }
+        const counterResponse = await fetch('/api/reverse/update-counters', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(counterUpdates),
+        });
+
+        if (!counterResponse.ok) {
+          throw new Error('Failed to update counters');
+        }
+
+        fetchCounters();
+      } catch (error) {
+        console.error('Error submitting form:', error);
+      }
+    };
+    reader.readAsBinaryString(templateBlob);
+  } catch (error) {
+    console.error('Error submitting form:', error);
+  }
+};
+
 
   const filteredDocuments = documents.filter(document =>
     document.toLowerCase().includes(searchTerm.toLowerCase())
@@ -517,7 +524,7 @@ const handleReturned = async (client) => {
                   <option value="">Select headphones</option>
                   {headphones.map((headphones, index) => (
                     <option key={index} value={headphones.headphone}>
-                      {headphones.headphone}
+                      {headphones.headphones}
                     </option>
                   ))}
                 </select>
@@ -555,7 +562,7 @@ const handleReturned = async (client) => {
           </form>
         </div>
 
-        
+         
 
         
 <div className="right-docx">
