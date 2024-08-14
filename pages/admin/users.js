@@ -6,7 +6,7 @@ const UsersPage = () => {
   const { data: session, status } = useSession();
   const [users, setUsers] = useState([]);
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('it');
+  const [role, setRole] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -31,12 +31,17 @@ const UsersPage = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, role }),
     });
-    if (response.ok) {
-      fetchUsers();
-      setEmail('');
-      setRole('it');
+  
+    if (!response.ok) {
+      console.error('Failed to add user:', await response.text());
+      return;
     }
+  
+    fetchUsers();
+    setEmail('');
+    setRole('');
   };
+  
 
   const deleteUser = async (email) => {
     const response = await fetch('/api/users', {

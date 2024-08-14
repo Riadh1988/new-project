@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   await mongooseConnect();
 
   if (req.method === 'GET') {
-    try {
+    try { 
       const admins = await Admin.find();
       const supervisors = await Supervisor.find();
       const recruitments = await Recruitment.find();
