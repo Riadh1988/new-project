@@ -28,7 +28,7 @@ export const authOptions = {
       name: `next-auth.session-token`,
       options: {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Set to true in production for HTTPS
+        secure: process.env.NODE_ENV === true, // Set to true in production for HTTPS
         path: '/',
         sameSite: 'lax', // Ensure cookies are sent with cross-origin requests
       },
