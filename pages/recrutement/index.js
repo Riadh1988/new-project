@@ -6,7 +6,6 @@ import Modal from '../../components/Modal';
 import { CSVLink } from 'react-csv';
  import { useSession } from 'next-auth/react';
  import { useRouter } from 'next/router';
- import Loading from '@/components/Loading';
 export default function Recrutement() {
   const [languages, setLanguages] = useState([]);
   const [candidatures, setCandidatures] = useState([]);
@@ -45,7 +44,7 @@ export default function Recrutement() {
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editCandidature, setEditCandidature] = useState(null);
-  if (status === 'loading') return <Loading />;
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -238,8 +237,10 @@ export default function Recrutement() {
 
   return (
     <Layout clients={clients}>
-      <div>
-        <h1>Candidatures Management</h1>
+      <div> 
+        <div className=''>
+        <div className='add-cnd'>
+        
         <div>
           <button onClick={() => { setShowModal(true); setEditCandidature(null); }}>Add Candidature</button>
           <Modal show={showModal} onClose={() => setShowModal(false)}>
@@ -272,6 +273,8 @@ export default function Recrutement() {
             </form>
           </Modal>
         </div>
+</div>
+<div className=''>
         <div>
           <input type="text" placeholder="Search by Name" value={search} onChange={(e) => setSearch(e.target.value)} />
           {showMoreFilters && (
@@ -303,6 +306,12 @@ export default function Recrutement() {
             {showMoreFilters ? 'Show Fewer Filters' : 'More Filters'}
           </button>
           <button onClick={handleResetFilters}>Reset Filters</button>
+          <CSVLink
+          data={prepareDataForExport(filteredCandidatures)}
+          filename="candidatures.csv"
+        >
+          Export to CSV
+        </CSVLink>
         </div>
         <CustomTable
           columns={columns}
@@ -314,13 +323,8 @@ export default function Recrutement() {
           onEdit={openEditModal}
           languages={languages}
         />
-        <CSVLink
-          data={prepareDataForExport(filteredCandidatures)}
-          filename="candidatures.csv"
-        >
-          Export to CSV
-        </CSVLink>
-      </div>
+        
+      </div></div></div>
       <div id="modal-root"></div>
     </Layout>
   );
