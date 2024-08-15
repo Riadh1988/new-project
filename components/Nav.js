@@ -27,17 +27,22 @@ export default function Nav({ clients }) { // Receive clients as props
             >
               {clientItem.client}
             </Link>
-          ))}
+          ))} 
         </nav> */}
-        <Link href="/recrutement" className="addNew">
-          Recrutement
-        </Link>
         <Link href="/reverse" className="addNew">
-          Reverses
+        Reverse
         </Link>
-        <Link href="/client" className="addNew">
-          Add New Client
+        <Link href="/recrutement" className="addNew">
+        Recruitment
         </Link>
+        <Link href="/tickets/user" className="addNew">
+        Tickets users
+        </Link>
+        <Link href="/tickets/admin" className="addNew">
+        Tickets Admin
+        </Link>
+        <Link href="/utils" className="addNew">Add Utils</Link>
+        <Link href="/admin/users" className="addNew">Add Users</Link>
       </aside>
       <button 
         className={`navToggle ${isNavVisible ? '' : 'iconLeft'}`} 

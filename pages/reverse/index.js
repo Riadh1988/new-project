@@ -85,8 +85,7 @@ export default function Home() {
         throw new Error('Failed to fetch clients');
       }
       const data = await response.json();
-      setComputers(data);
-      console.log(computers)
+      setComputers(data); 
     } catch (error) {
       console.error('Error fetching clients:', error);
     }
@@ -567,7 +566,7 @@ const handleSubmit = async (e) => {
         
 <div className="right-docx">
         <div>
-          <h2>Client List</h2>
+          <h2>Agents List</h2>
           <input
             type="text"
             placeholder="Search clients..."
@@ -579,13 +578,13 @@ const handleSubmit = async (e) => {
         <div className="extra-docx">
         <div>
           <h2>Counters</h2>
-          <ul>
-            <li>Computers: {counters.computer}</li>
-            <li>Laptop: {counters.laptop}</li>
-            <li>Monitors: {counters.monitor}</li>
-            <li>Headphones: {counters.headphones}</li>
-            <li>Mice: {counters.mouse}</li>
-            <li>Keyboards: {counters.keyboard}</li>
+          <ul className="counter-ul">
+            <li>Computers: <span className="right">{counters.computer}</span></li>
+            <li>Laptop: <span className="right">{counters.laptop}</span></li>
+            <li>Monitors: <span className="right">{counters.monitor}</span></li>
+            <li>Headphones: <span className="right">{counters.headphones}</span></li>
+            <li>Mice: <span className="right">{counters.mouse}</span></li>
+            <li>Keyboards: <span className="right">{counters.keyboard}</span></li>
           </ul>
         </div>
 </div>

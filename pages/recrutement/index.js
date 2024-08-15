@@ -6,6 +6,7 @@ import Modal from '../../components/Modal';
 import { CSVLink } from 'react-csv';
  import { useSession } from 'next-auth/react';
  import { useRouter } from 'next/router';
+ import Loading from '@/components/Loading';
 export default function Recrutement() {
   const [languages, setLanguages] = useState([]);
   const [candidatures, setCandidatures] = useState([]);
@@ -44,7 +45,7 @@ export default function Recrutement() {
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editCandidature, setEditCandidature] = useState(null);
-
+  if (status === 'loading') return <Loading />;
   useEffect(() => {
     const fetchData = async () => {
       try {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
+import Loading from '@/components/Loading';
 
 const UsersPage = () => {
   const { data: session, status } = useSession();
@@ -55,7 +56,7 @@ const UsersPage = () => {
     }
   };
 
-  if (status === 'loading') return <p>Loading...</p>;
+  if (status === 'loading') return <Loading />;
   if (status === 'authenticated' && !session.user) return <p>Unauthorized</p>; // Handle cases where session.user is undefined
 
   return (

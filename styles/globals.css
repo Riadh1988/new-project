@@ -227,8 +227,8 @@ button:focus {
   display: block;
   color: #ddd;
   text-decoration: none;
-  padding: 10px 0;
-  margin-top: 20px;
+  padding: 25px 0px 0px 5px;
+  margin-top: 25px;
   border-top: 1px solid #444; /* Optional: separator line */
 }
 
@@ -867,4 +867,10 @@ textarea{
   border-radius: 5px;
   font-size: 16px;
   box-sizing: border-box;
+}
+.counter-ul li{
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 0 15px 0;
+  border-bottom: 1px solid #ccc;
 }
