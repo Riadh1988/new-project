@@ -4,7 +4,6 @@ import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 import { saveAs } from 'file-saver';
 import Mammoth from 'mammoth';
-import Modal from '../../components/Modal';
 import ClientList from '../../components/Agt_wfh_List';
 import { FaEye, FaTrashAlt } from 'react-icons/fa';
  import { useSession } from 'next-auth/react';

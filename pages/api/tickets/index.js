@@ -5,7 +5,7 @@ import { mongooseConnect } from '../../../lib/mongoose';
 import Ticket from '../../../models/Ticket';
 
 // Ensure the upload directory exists
-const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+const uploadDir = path.join(process.cwd(), 'down');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -55,9 +55,9 @@ export default async function handler(req, res) {
         // Handle file URLs and add them to additionalData
         if (files.screenshot) {
           if (Array.isArray(files.screenshot)) {
-            additionalData.files = `/uploads/${path.basename(files.screenshot[0].filepath)}`;
+            additionalData.files = `/${path.basename(files.screenshot[0].filepath)}`;
           } else {
-            additionalData.files = `/uploads/${path.basename(files.screenshot.filepath)}`;
+            additionalData.files = `/${path.basename(files.screenshot.filepath)}`;
           }
         }
 
