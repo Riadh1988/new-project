@@ -2,6 +2,7 @@ import { useSession, signOut } from "next-auth/react";
 import Nav from "./Nav";
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import Link from "next/link";
 export default function Layout({ children }) {
   const { data: session } = useSession();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -41,7 +42,7 @@ export default function Layout({ children }) {
               </ul>
             </div>
             
-          </div>
+          </div><div className="Back"><Link href="/"> Home</Link></div>
           <div className="mainContent">
             {children}
           </div>

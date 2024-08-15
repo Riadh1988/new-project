@@ -703,6 +703,7 @@ label input[type="checkbox"] {
 label:has(input[type="checkbox"]){
   border-bottom: 1px solid #ccc;
   width: auto !important;
+  padding-bottom: 10px;
 }
 
 .utile{
@@ -873,4 +874,50 @@ textarea{
   justify-content: space-between;
   padding: 15px 0 15px 0;
   border-bottom: 1px solid #ccc;
+}
+.Back{
+  padding-top: 13px;
+}
+.returned-h{
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  margin-bottom: 30px;
+  text-align: center;
+
+}
+.mod-r p{
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 0 15px 0;
+  border-bottom: 1px solid #ccc;
+}
+.mod-r{
+  text-align: center;
+  min-height: 300px;
+  position: relative;
+}
+.mod-rr{
+  text-align: center;
+  min-height: 300px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  align-content: center;
+}
+.CLOSE{
+  margin-top: 20px;
+    width: 50%;
+}
+.buttons-ret{
+  display: flex;
+  justify-content: space-between;
+}
+.buttons-ret .mark-as-returned{
+  width: 65%;
+  margin-top: 20px;
+}
+.CLOSE.red{
+  width: 35%;
+  background-color: red;
 }

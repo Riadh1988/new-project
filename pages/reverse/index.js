@@ -10,6 +10,8 @@ import { FaEye, FaTrashAlt } from 'react-icons/fa';
  import { useSession } from 'next-auth/react';
  import { useRouter } from 'next/router';
 
+ import Loader from "@/components/loader";
+
 
 
 export default function Home() {
@@ -27,7 +29,7 @@ export default function Home() {
   const [computers, setComputers] = useState([])
   const [monitors, setMonitors] = useState([])
   const [headphones, setHeadphones] = useState([])
- 
+  const [loading, setLoading] = useState(false);
   const [reverseData, setReverseData] = useState({
     candidateName: '',
     lastName: '',
@@ -260,14 +262,9 @@ const handleReturned = async (client) => {
   }
 };
 
-
-
-
-
-
-
 const handleSubmit = async (e) => {
   e.preventDefault();
+  setLoading(true);   
 
   try {
     const formData = {
@@ -300,10 +297,10 @@ const handleSubmit = async (e) => {
     }
 
     const data = await response.json();
-
     setClients((prevClients) => [...prevClients, data]);
     fetchClients();
 
+    // Generate the document
     const templatePath = '/1.docx';
     const templateResponse = await fetch(templatePath);
     if (!templateResponse.ok) {
@@ -322,8 +319,6 @@ const handleSubmit = async (e) => {
         doc.render();
         const generatedBlob = doc.getZip().generate({ type: 'blob' });
 
-        // Remove the upload part to the public folder
-        // Now only saving the generated document to the user’s local system
         saveAs(generatedBlob, formData.documentName);
         fetchDocuments();
 
@@ -370,11 +365,14 @@ const handleSubmit = async (e) => {
         fetchCounters();
       } catch (error) {
         console.error('Error submitting form:', error);
+      } finally {
+        setLoading(false);  // Set loading to false when done
       }
     };
     reader.readAsBinaryString(templateBlob);
   } catch (error) {
     console.error('Error submitting form:', error);
+    setLoading(false);  // Set loading to false if an error occurs
   }
 };
 
@@ -386,6 +384,7 @@ const handleSubmit = async (e) => {
   return (
     <Layout>
       <div className="holder-docx">
+      {loading && <Loader />} 
         <div className="left-docx">
           <form ref={formRef} onSubmit={handleSubmit}>
             <div className="form-group">
@@ -590,10 +589,7 @@ const handleSubmit = async (e) => {
 </div>
       </div>
 
-      <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
-            <h2>Document Preview</h2>
-            <div dangerouslySetInnerHTML={{ __html: previewContent }} /> 
-          </Modal>
+       
 
        <div id="modal-root"></div>
     </Layout>
