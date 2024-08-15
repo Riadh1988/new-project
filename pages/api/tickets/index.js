@@ -4,8 +4,8 @@ import path from 'path';
 import { mongooseConnect } from '../../../lib/mongoose';
 import Ticket from '../../../models/Ticket';
 
-// Ensure the upload directory exists
-const uploadDir = path.join(process.cwd(), 'down');
+// Define the upload directory inside /tmp
+const uploadDir = path.join('/tmp', 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -40,38 +40,33 @@ export default async function handler(req, res) {
       console.log('Parsed files:', files);
 
       try {
-        // Extract fields
         const type = Array.isArray(fields.type) ? fields.type[0] : fields.type || '';
         const user = Array.isArray(fields.user) ? fields.user[0] : fields.user || '';
 
-        // Prepare additionalData for storing extra form fields and file URLs
         const additionalData = {};
         for (const key in fields) {
           if (key !== 'type' && key !== 'status' && key !== 'user') {
             additionalData[key] = Array.isArray(fields[key]) ? fields[key][0] : fields[key];
           }
         }
- 
-        // Handle file URLs and add them to additionalData
+
         if (files.screenshot) {
           if (Array.isArray(files.screenshot)) {
-            additionalData.files = `/${path.basename(files.screenshot[0].filepath)}`;
+            additionalData.files = `/uploads/${path.basename(files.screenshot[0].filepath)}`;
           } else {
-            additionalData.files = `/${path.basename(files.screenshot.filepath)}`;
+            additionalData.files = `/uploads/${path.basename(files.screenshot.filepath)}`;
           }
         }
 
-
-        // Create a new ticket
         const ticket = new Ticket({
           type,
           status: "in progress",
           user,
-          additionalData, // Pass the populated additionalData object, including files
+          additionalData,
         });
 
         await ticket.save();
-        console.log("ticket ",ticket)
+        console.log("ticket ", ticket);
         res.status(201).json({ message: 'Ticket created successfully', data: ticket });
       } catch (error) {
         console.error('Error creating ticket:', error);
