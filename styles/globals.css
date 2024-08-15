@@ -925,3 +925,17 @@ textarea{
   text-align: right;
   margin-bottom: 30px;
 }
+.csv{
+  padding: 8px 12px;
+  margin: 0 5px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-weight: 700;
+  letter-spacing: 1px;
+  float: right;
+  margin-top: 14px;
+}

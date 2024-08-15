@@ -307,8 +307,9 @@ export default function Recrutement() {
           <CSVLink
           data={prepareDataForExport(filteredCandidatures)}
           filename="candidatures.csv"
+          className='csv'
         >
-          Export to CSV
+          Export to CSV 
         </CSVLink>
         </div>
         <CustomTable
