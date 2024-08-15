@@ -236,11 +236,10 @@ export default function Recrutement() {
   };
 
   return (
-    <Layout clients={clients}>
+    <Layout clients={clients}> 
       <div> 
         <div className='add-'>
-        <div className='add-cnd'>
-        
+        <div className='add-cnd'> 
         <div>
           <button onClick={() => { setShowModal(true); setEditCandidature(null); }}>Add Candidature</button>
           <Modal show={showModal} onClose={() => setShowModal(false)}>
@@ -262,13 +261,12 @@ export default function Recrutement() {
                 ))}
               </select>
               <input
-  type="datetime-local"
-  name="interviewDateTime"
-  onChange={handleChange}
-  value={formData.interviewDateTime ? new Date(formData.interviewDateTime).toISOString().slice(0, -1) : ''} // Handle invalid date
-  required
-/>
-
+                  type="datetime-local"
+                  name="interviewDateTime"
+                  onChange={handleChange}
+                  value={formData.interviewDateTime ? new Date(formData.interviewDateTime).toISOString().slice(0, -1) : ''} // Handle invalid date
+                  required
+                />c
               <button type="submit">Save</button>
             </form>
           </Modal>
