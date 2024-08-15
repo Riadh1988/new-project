@@ -238,7 +238,7 @@ export default function Recrutement() {
   return (
     <Layout clients={clients}>
       <div> 
-        <div className=''>
+        <div className='add-'>
         <div className='add-cnd'>
         
         <div>
@@ -274,7 +274,7 @@ export default function Recrutement() {
           </Modal>
         </div>
 </div>
-<div className=''>
+<div className='add--'>
         <div>
           <input type="text" placeholder="Search by Name" value={search} onChange={(e) => setSearch(e.target.value)} />
           {showMoreFilters && (
