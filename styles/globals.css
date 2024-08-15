@@ -248,6 +248,7 @@ button:focus {
   cursor: pointer;
   z-index: 1001;
   transition: background-color 0.3s;
+  line-height: 20px;
 }
 
 .navToggle:hover {
@@ -590,15 +591,21 @@ p {
   padding: 10px 50px; /* 50px padding on left and right */
   box-sizing: border-box; /* Ensure padding doesn't overflow */
 }
-.holder-docx {
+.holder-docx , .user-page{
   display: flex;
   gap: 20px;
 }
 
-.holder-docx > div {
+.holder-docx > div, .user-page > div {
   padding: 20px;
   background-color: #f4f4f4;
   border-radius: 8px;
+}
+.user-page-left{
+width: 25%;
+}
+.user-page-right{
+width: 75%;
 }
 
 .left-docx {

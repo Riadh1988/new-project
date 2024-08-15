@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
+import Layout from '@/components/Layout';
 
 const UsersPage = () => {
   const { data: session, status } = useSession();
@@ -58,7 +59,9 @@ const UsersPage = () => {
   if (status === 'authenticated' && !session.user) return <p>Unauthorized</p>; // Handle cases where session.user is undefined
 
   return (
-    <div>
+    <Layout>
+      <div className='user-page'>
+      <div className='user-page-left'>
       <h1>Manage Users</h1>
       {session?.user?.role === 'admin' && (
         <div>
@@ -69,6 +72,7 @@ const UsersPage = () => {
             placeholder="Email"
           />
           <select value={role} onChange={(e) => setRole(e.target.value)}>
+          <option value="">Select a role</option>
             <option value="admin">Admin</option>
             <option value="supervisor">Supervisor</option>
             <option value="recruitment">Recruitment</option>
@@ -76,6 +80,8 @@ const UsersPage = () => {
           <button onClick={addUser}>Add User</button>
         </div>
       )}
+      </div>
+      <div className='user-page-right'>
       <table>
         <thead>
           <tr>
@@ -98,7 +104,11 @@ const UsersPage = () => {
           ))}
         </tbody>
       </table>
-    </div>
+      </div>
+      </div>
+    
+      
+    </Layout>
   );
 };
 
