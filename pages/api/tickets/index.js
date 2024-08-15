@@ -52,11 +52,13 @@ export default async function handler(req, res) {
 
         if (files.screenshot) {
           if (Array.isArray(files.screenshot)) {
-            additionalData.files = `/uploads/${path.basename(files.screenshot[0].filepath)}`;
+            additionalData.files = `/tmp/${path.basename(files.screenshot[0].filepath)}`;
           } else {
-            additionalData.files = `/uploads/${path.basename(files.screenshot.filepath)}`;
+            additionalData.files = `/tmp/${path.basename(files.screenshot.filepath)}`;
           }
+          
         }
+        
 
         const ticket = new Ticket({
           type,
