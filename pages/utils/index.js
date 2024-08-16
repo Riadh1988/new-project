@@ -34,14 +34,7 @@ export default function ClientPage() {
     fetchLanguages();
   }, []);
 
-  async function fetchClients() {
-    try {
-      const response = await axios.get('/api/clients');
-      setClients(response.data);
-    } catch (error) {
-      console.error('Error fetching clients:', error.response?.data || error.message);
-    }
-  }
+
   async function fetchClients() {
     try {
       const response = await axios.get('/api/clients');
@@ -108,9 +101,10 @@ export default function ClientPage() {
       const response = await axios.get('/api/clients/screen');
       setScreens(response.data);
     } catch (error) {
-      console.error('Error fetching pcs:', error.response?.data || error.message);
+      console.error('Error fetching screens:', error.response?.data || error.message); // Correct error message
     }
   }
+  
 
   async function fetchLanguages() {
     try {
@@ -190,7 +184,7 @@ export default function ClientPage() {
   async function editScreen(ev) {
     ev.preventDefault();
     try {
-      await axios.put(`/api/clients/screen/${editingPcId}`, { pc: editingPc });
+      await axios.put(`/api/clients/screen/${editingScreenId}`, { screen: editingScreen });
       setEditingScreenId(null);
       setEditingScreen('');
       fetchScreens();
@@ -210,12 +204,13 @@ export default function ClientPage() {
 
   async function deleteScreen(id) {
     try {
-      await axios.delete(`/api/clients/screnn/${id}`);
-      fetchScreens();
+      await axios.delete(`/api/clients/screen/${id}`);
+      fetchScreens(); // Refresh the list after deletion
     } catch (error) {
-      console.error('Error deleting pc:', error.response?.data || error.message);
+      console.error('Error deleting screen:', error.response?.data || error.message);
     }
   }
+  
 
   async function createLanguage(ev) {
     ev.preventDefault();
@@ -434,7 +429,7 @@ export default function ClientPage() {
             <FaEdit />
           </button>
           <button
-            onClick={() => deleteScreen(screen._id)}
+            onClick={() => deleteScreen(lang._id)}
             className="deleteButton"
           >
             <FaTrashAlt />

@@ -266,7 +266,7 @@ export default function Recrutement() {
                   onChange={handleChange}
                   value={formData.interviewDateTime ? new Date(formData.interviewDateTime).toISOString().slice(0, -1) : ''} // Handle invalid date
                   required
-                />c
+                />
               <button type="submit">Save</button>
             </form>
           </Modal>
