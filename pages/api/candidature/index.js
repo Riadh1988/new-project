@@ -1,6 +1,6 @@
 // /pages/api/candidature.js
-import { mongooseConnect } from '../../../lib/mongoose';
-import Candidature from '../../../models/candidature';
+import { mongooseConnect } from '@/lib/mongoose';
+import Candidature from '@/models/candidature';
 
 export default async function handler(req, res) {
   const { method } = req;
