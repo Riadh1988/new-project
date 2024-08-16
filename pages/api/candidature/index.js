@@ -1,6 +1,6 @@
-// /pages/api/candidature.js
 import { mongooseConnect } from '@/lib/mongoose';
 import Candidature from '@/models/candidature';
+import Client from '@/models/client'; // Import the Client model
 
 export default async function handler(req, res) {
   const { method } = req;
@@ -10,6 +10,7 @@ export default async function handler(req, res) {
   switch (method) {
     case 'GET':
       try {
+        // Ensure the Client model is registered
         const candidatures = await Candidature.find().populate('clientToAssign', 'client');
         res.status(200).json(candidatures);
       } catch (error) {
