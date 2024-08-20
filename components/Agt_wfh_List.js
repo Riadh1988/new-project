@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Modal from './Modal';  
-
+import { FaEye } from 'react-icons/fa';
 const ClientList = ({ clients, onReturned }) => {
   const [selectedClient, setSelectedClient] = useState(null);
   const [isReturnPopupOpen, setIsReturnPopupOpen] = useState(false);
@@ -56,13 +56,13 @@ const ClientList = ({ clients, onReturned }) => {
       <ul>
         {clients.map((client, index) => (
           <li key={index} className="per-li">
-            <span
-              onClick={() => handleClientClick(client)}
+            <span 
               className="client-name"
             >
               {client.candidateName} {client.lastName}
             </span>
             <div className="btn-return">
+              <FaEye onClick={() => handleClientClick(client)}></FaEye>
               {client.returned ? (
                 <button className="returned-btn" disabled>
                   Returned

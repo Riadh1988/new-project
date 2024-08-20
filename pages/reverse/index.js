@@ -4,11 +4,10 @@ import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 import { saveAs } from 'file-saver';
 import Mammoth from 'mammoth';
-import ClientList from '../../components/Agt_wfh_List';
-import { FaEye, FaTrashAlt } from 'react-icons/fa';
- import { useSession } from 'next-auth/react';
- import { useRouter } from 'next/router';
- import Loader from "@/components/Loader";
+import ClientList from '../../components/Agt_wfh_List'; 
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
+import Loader from "@/components/Loader";
 
 
 

@@ -8,7 +8,7 @@ let socket;
 
 export default function UserTicketList() {
   const [tickets, setTickets] = useState([]);
-  const [activeChats, setActiveChats] = useState([]);
+  const [activeChat, setActiveChat] = useState(null); 
   const [messages, setMessages] = useState([]);
   const [isVisible, setIsVisible] = useState(true);
   const endOfMessagesRef = useRef(null);
@@ -19,8 +19,12 @@ export default function UserTicketList() {
 
   useEffect(() => {
     socket = io();
+
     socket.on('message', (message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
+      setMessages((prevMessages) => { 
+        if (prevMessages.some((msg) => msg._id === message._id)) return prevMessages;
+        return [...prevMessages, message];
+      });
       scrollToBottom();
     });
 
@@ -31,7 +35,14 @@ export default function UserTicketList() {
 
   useEffect(() => {
     fetchTickets();
-  }, []);
+   
+    const intervalId = setInterval(() => {
+      fetchTickets();
+    }, 5000);  
+   
+    return () => clearInterval(intervalId);
+  }, []); 
+  
 
   useEffect(() => {
     scrollToBottom();
@@ -64,12 +75,7 @@ export default function UserTicketList() {
   };
 
   const openChatBox = async (ticketId) => {
-    setActiveChats((prevChats) => {
-      if (prevChats.some((chat) => chat.id === ticketId)) {
-        return prevChats;
-      }
-      return [...prevChats, { id: ticketId }];
-    });
+    setActiveChat(ticketId);
 
     try {
       const response = await axios.get(`/api/tickets/${ticketId}/messages`);
@@ -87,10 +93,10 @@ export default function UserTicketList() {
       text: messageText,
       createdAt: new Date(),
     };
-
+    // Emit message to socket server
     socket.emit('message', { ticketId, message });
-    setMessages((prevMessages) => [...prevMessages, message]);
-    scrollToBottom();
+    // Clear the message input
+    document.querySelector(`#chat-input-${ticketId}`).value = '';
   };
 
   const handleSendClick = (ticketId) => {
@@ -101,7 +107,7 @@ export default function UserTicketList() {
   };
 
   const closeChatBox = (ticketId) => {
-    setActiveChats((prevChats) => prevChats.filter((chat) => chat.id !== ticketId));
+    setActiveChat(null);
   };
 
   const scrollToBottom = () => {
@@ -158,7 +164,7 @@ export default function UserTicketList() {
     } catch (error) {
       console.error('Error submitting ticket:', error.response ? error.response.data : error.message);
     }
-  };
+  }; 
   return (
     <Layout>
        <div className='tick-holder'>
@@ -535,17 +541,19 @@ export default function UserTicketList() {
                   {ticket.status}
                 </span>
                 <span className="ab-top-dt">
-                  {new Date(ticket.createdAt).toLocaleString()}
+                  {new Date(ticket.createdAt).toLocaleString()}<br />
+                  
                 </span>
               </div>
               <div className="card-inner-top">
-                <h3><strong>{ticket.type}</strong></h3>
+                <h3><strong>{ticket.type}</strong></h3> 
               </div>
               <div className="card-inner-bottom">
                 {Object.entries(ticket.additionalData).map(([key, value]) => (
                   <p key={key}><strong>{key}:</strong> {formatValue(key, value)}</p>
                 ))}
               </div>
+              <strong> Created By {ticket.user.split('@')[0]}</strong>
             </div>
 
             {ticket.messages && ticket.messages.length > 0 && (
@@ -567,13 +575,13 @@ export default function UserTicketList() {
        
 
       <div className="chat-boxes">
-        {activeChats.map((chat) => (
-          <div key={chat.id} className="chat-box">
+        {activeChat && (
+          <div className="chat-box">
             <div className="chat-header" onClick={handleToggleVisibility}>
               <div className="tik-sp">
-                <span>Ticket ID: {chat.id}</span>
+                <span>Ticket ID: {activeChat}</span>
               </div>
-              <button onClick={() => closeChatBox(chat.id)} className="close-chat">X</button>
+              <button onClick={() => closeChatBox(activeChat)} className="close-chat">X</button>
             </div>
             {isVisible && (
               <>
@@ -592,16 +600,16 @@ export default function UserTicketList() {
                 </div>
                 <div className="chat-footer">
                   <input
-                    id={`chat-input-${chat.id}`}
+                    id={`chat-input-${activeChat}`}
                     type="text"
                     placeholder="Type a message..."
                   />
-                  <button onClick={() => handleSendClick(chat.id)}>Send</button>
+                  <button onClick={() => handleSendClick(activeChat)}>Send</button>
                 </div>
               </>
             )}
           </div>
-        ))}
+        )}
       </div>
     </Layout>
   );

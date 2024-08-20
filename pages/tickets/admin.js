@@ -10,7 +10,7 @@ let socket;
 export default function AdminTicketList() {
   const [tickets, setTickets] = useState([]);
   const [filter, setFilter] = useState('');
-  const [activeChats, setActiveChats] = useState([]);
+  const [activeChat, setActiveChat] = useState(null); 
   const [messages, setMessages] = useState([]);
   const [isVisible, setIsVisible] = useState(true);
   const endOfMessagesRef = useRef(null);
@@ -32,7 +32,7 @@ export default function AdminTicketList() {
       socket.disconnect();
     };
   }, [status, session, router]);
-
+  
   useEffect(() => {
     const interval = setInterval(fetchTickets, 5000);
     return () => clearInterval(interval);
@@ -53,13 +53,8 @@ export default function AdminTicketList() {
   };
 
   const openChatBox = async (ticketId, user, type) => {
-    setActiveChats((prevChats) => {
-      if (prevChats.some((chat) => chat.id === ticketId)) {
-        return prevChats;
-      }
-      return [...prevChats, { id: ticketId, user, type }];
-    });
-
+    setActiveChat({ id: ticketId, user, type }); // Store chat information
+  
     try {
       const response = await axios.get(`/api/tickets/${ticketId}/messages`);
       setMessages(response.data);
@@ -69,11 +64,13 @@ export default function AdminTicketList() {
       console.error('Error fetching messages:', error);
     }
   };
+  
+   
+  
 
   const handleSendMessage = (ticketId, messageText) => {
     const message = {
       sender: session.user.email,
-      receiver: activeChats.find((chat) => chat.id === ticketId)?.user,
       text: messageText,
       createdAt: new Date(),
     };
@@ -82,6 +79,7 @@ export default function AdminTicketList() {
     setMessages((prevMessages) => [...prevMessages, message]);
     scrollToBottom();
   };
+  
 
   const handleSendClick = (ticketId) => {
     const messageText = document.querySelector(`#chat-input-${ticketId}`).value;
@@ -90,7 +88,7 @@ export default function AdminTicketList() {
   };
 
   const closeChatBox = (ticketId) => {
-    setActiveChats((prevChats) => prevChats.filter((chat) => chat.id !== ticketId));
+    setActiveChat(null);
   };
 
   const updateStatus = async (id, newStatus, user, type) => {
@@ -177,21 +175,22 @@ export default function AdminTicketList() {
       </div>
 
       <div className="chat-boxes">
-        {activeChats.map((chat) => (
-          <div key={chat.id} className="chat-box">
+        {activeChat &&
+        (
+          <div className="chat-box">
             <div className="chat-header" onClick={handleToggleVisibility}>
               <div className="tik-sp">
-                <span>User: {chat.user.split('@')[0]}</span>
-                <span>Ticket Type: {chat.type}</span>
+                <span>User: {activeChat.user.split('@')[0]}</span>
+                <span>Ticket Type: {activeChat.type}</span>
               </div>
-              <button onClick={() => closeChatBox(chat.id)} className="close-chat">X</button>
+              <button onClick={closeChatBox} className="close-chat">X</button>
             </div>
             {isVisible && (
               <>
                 <div className="chat-body">
                   {messages.map((message, index) => (
                     <div
-                    key={message._id}
+                      key={index} // Use index as key if message._id is not available
                       className={`message ${message.sender === session.user.email ? 'sent' : 'received'}`}
                     >
                       <span>{message.sender}:</span> {message.text}
@@ -203,16 +202,16 @@ export default function AdminTicketList() {
                 </div>
                 <div className="chat-footer">
                   <input
-                    id={`chat-input-${chat.id}`}
+                    id={`chat-input-${activeChat.id}`} // Use activeChat.id for input id
                     type="text"
                     placeholder="Type a message..."
                   />
-                  <button onClick={() => handleSendClick(chat.id)}>Send</button>
+                  <button onClick={() => handleSendClick(activeChat.id)}>Send</button>
                 </div>
               </>
             )}
           </div>
-        ))}
+        )}
       </div>
     </Layout>
   );
