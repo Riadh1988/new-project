@@ -9,8 +9,9 @@ const candidatureSchema = new Schema({
   interviewDateTime: { type: Date, required: true },
   clientDecision: { type: String, enum: ['Accepted', 'Declined', 'Pending'], default: 'Pending' },
   declineReason: { type: String },
-  declineComment: { type: String }, // Add decline comment field for 'other' reason
+  declineComment: { type: String },  
   rescheduleDateTime: { type: Date },
+  fileUrl: { type: String },
 });
 
 const Candidature = models.Candidature || model('Candidature', candidatureSchema);

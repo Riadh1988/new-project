@@ -112,6 +112,9 @@ a {
   width: calc(33% - 16px); /* 5 cards per row with gap */
   box-sizing: border-box;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 /* Card background based on status */

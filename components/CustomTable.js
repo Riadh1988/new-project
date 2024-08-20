@@ -111,23 +111,28 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
           {data.map((row) => (
             <tr key={row._id}>
               {columns.map(column => (
-                <td key={column.accessor}>
-                  {column.accessor === 'clientToAssign' ? (
-                    row[column.accessor]
-                  ) : column.accessor === 'interviewDateTime' ? (
-                    new Date(row[column.accessor]).toLocaleString()
-                  ) : column.accessor === 'clientDecision' ? (
-                    <span
-                      style={{ cursor: 'pointer', color: 'blue' }}
-                      onClick={() => handleModalOpen(row, 'edit')}
-                    >
-                      {row[column.accessor]}
-                    </span>
-                  ) : (
-                    row[column.accessor]
-                  )}
-                </td>
-              ))}
+                    <td key={column.accessor}>
+                      {column.accessor === 'clientToAssign' ? (
+                        row[column.accessor]
+                      ) : column.accessor === 'interviewDateTime' ? (
+                        new Date(row[column.accessor]).toLocaleString()
+                      ) : column.accessor === 'fileUrl' ? (
+                        <a href={row[column.accessor]} target="_blank" rel="noopener noreferrer">
+                          View CV
+                        </a>
+                      ) : column.accessor === 'clientDecision' ? (
+                        <span
+                          style={{ cursor: 'pointer', color: 'blue' }}
+                          onClick={() => handleModalOpen(row, 'edit')}
+                        >
+                          {row[column.accessor]}
+                        </span>
+                      ) : (
+                        row[column.accessor]
+                      )}
+                    </td>
+                  ))}
+
               <td>
                 <button onClick={() => handleModalOpen(row, 'view')}>View</button>
                 <button onClick={() => handleModalOpen(row, 'edit')}>Edit</button>

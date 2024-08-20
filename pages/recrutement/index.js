@@ -24,6 +24,7 @@ export default function Recrutement() {
     declineReason: '',
     declineComment: '',
     rescheduleDateTime: '',
+    fileUrl:'',
   });
 
   const { data: session, status } = useSession();
@@ -97,13 +98,38 @@ export default function Recrutement() {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    const formDataObject = new FormData();
+    formDataObject.append('candidateName', formData.candidateName);
+    formDataObject.append('phone', formData.phone);
+    formDataObject.append('email', formData.email);
+    formDataObject.append('language', formData.language);
+    formDataObject.append('clientToAssign', formData.clientToAssign);
+    formDataObject.append('interviewDateTime', formData.interviewDateTime);
+    formDataObject.append('clientDecision', formData.clientDecision);
+    formDataObject.append('declineReason', formData.declineReason);
+    formDataObject.append('declineComment', formData.declineComment);
+    formDataObject.append('rescheduleDateTime', formData.rescheduleDateTime);
+  
+    if (formData.fileUrl) {
+      formDataObject.append('fileUrl', formData.fileUrl);
+    }
+  
     try {
       if (editCandidature) {
-        await axios.put(`/api/candidature/${editCandidature._id}`, formData);
+        await axios.put(`/api/candidature/${editCandidature._id}`, formDataObject, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
       } else {
-        await axios.post('/api/candidature', formData);
+        await axios.post('/api/candidature', formDataObject, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
       }
-
+  
       setFormData({
         candidateName: '',
         phone: '',
@@ -115,17 +141,25 @@ export default function Recrutement() {
         declineReason: '',
         declineComment: '',
         rescheduleDateTime: '',
+        fileUrl: '',
       });
+  
       setShowModal(false);
       setEditCandidature(null);
-
+  
       const candidaturesResponse = await axios.get('/api/candidature');
       setCandidatures(candidaturesResponse.data);
     } catch (error) {
       console.error('Error submitting candidature:', error);
     }
   };
-
+  
+  const handleFileChange = (e) => {
+    const { name, files } = e.target;
+    if (files && files.length > 0) {
+      setFormData((prevData) => ({ ...prevData, [name]: files[0] }));
+    }
+  };
   const handleUpdate = async (id, updatedData) => {
     try {
       await axios.put(`/api/candidature/${id}`, updatedData);
@@ -170,6 +204,7 @@ export default function Recrutement() {
     const d = new Date(date);
     if (isNaN(d.getTime())) return '--';
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} at ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  
   };
   
 
@@ -209,6 +244,7 @@ export default function Recrutement() {
       declineComment: item.declineComment || '--',
       declineReason: item.declineReason || '--',
       rescheduleDateTime: formatDate(item.rescheduleDateTime),
+      fileUrl: item.fileUrl || '--',
     }));
   };
 
@@ -219,6 +255,15 @@ export default function Recrutement() {
     { Header: 'Language', accessor: 'language' },
     { Header: 'Client', accessor: 'clientToAssign' },
     { Header: 'Interview Date', accessor: 'interviewDateTime' },
+    {
+      Header: 'CV',
+      accessor: 'fileUrl',
+      Cell: ({ value }) => value ? (
+        <a href={value} target="_blank" rel="noopener noreferrer">
+          CV here
+        </a>
+      ) : '--'
+    },
     { Header: 'Status', accessor: 'clientDecision' },
   ], []);
 
@@ -236,6 +281,7 @@ export default function Recrutement() {
       declineReason: candidature.declineReason || '',
       declineComment: candidature.declineComment || '',
       rescheduleDateTime: candidature.rescheduleDateTime || '',
+      fileUrl: candidature.fileUrl || '',
     });
   
     setEditCandidature(candidature);
@@ -277,6 +323,15 @@ export default function Recrutement() {
                 name="interviewDateTime"
                 required
         />
+        <div>
+                <label htmlFor="fileUrl">Screenshot:</label>
+                <input
+                  type="file"
+                  id="fileUrl"
+                  name="fileUrl"
+                  onChange={handleFileChange}
+                />
+              </div>
               <button type="submit">Save</button>
             </form>
           </Modal>

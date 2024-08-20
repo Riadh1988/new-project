@@ -4,7 +4,7 @@ const ticketSchema = new mongoose.Schema({
   type: { type: String, required: true },
   status: { type: String, required: true },
   user: { type: String, required: true },
-  fileUrl: { type: String },
+  
   additionalData: {
     type: Map,
     of: String,
