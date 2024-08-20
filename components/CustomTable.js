@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Modal from '../components/Modal'; // Import Modal component
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, languages }) => {
   const [editingData, setEditingData] = useState({
@@ -28,11 +30,11 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
       email: candidature.email || '',
       language: candidature.language || '',
       clientToAssign: clients.find(client => client.client === candidature.clientToAssign)?._id || '',
-      interviewDateTime: candidature.interviewDateTime || '',
+      interviewDateTime: candidature.interviewDateTime ? new Date(candidature.interviewDateTime) : null,
       clientDecision: candidature.clientDecision || '',
       declineReason: candidature.declineReason || '',
       declineComment: candidature.declineComment || '',
-      rescheduleDateTime: candidature.rescheduleDateTime || '',
+      rescheduleDateTime: candidature.rescheduleDateTime ? new Date(candidature.rescheduleDateTime) : null,
     });
     setModalMode(mode);
     setShowModal(true);
@@ -41,14 +43,11 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
   // Handle save action
   const handleSaveClick = async () => {
     try {
-      const updatedData = { ...editingData };
-
-      if (updatedData.interviewDateTime) {
-        updatedData.interviewDateTime = new Date(updatedData.interviewDateTime).toISOString();
-      }
-      if (updatedData.rescheduleDateTime) {
-        updatedData.rescheduleDateTime = new Date(updatedData.rescheduleDateTime).toISOString();
-      }
+      const updatedData = {
+        ...editingData,
+        interviewDateTime: editingData.interviewDateTime ? editingData.interviewDateTime.toISOString() : '',
+        rescheduleDateTime: editingData.rescheduleDateTime ? editingData.rescheduleDateTime.toISOString() : '',
+      };
 
       await handleUpdate(editingData._id, updatedData);
 
@@ -74,15 +73,15 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
     }
   };
 
-  // Format date for input
-  const formatDate = (date) => {
-    return date ? new Date(date).toISOString().slice(0, 16) : '';
-  };
-
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEditingData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Handle date changes for DatePicker
+  const handleDateChange = (date, name) => {
+    setEditingData(prev => ({ ...prev, [name]: date }));
   };
 
   // Handle select change for clientDecision
@@ -198,11 +197,14 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
                 <option key={client._id} value={client._id}>{client.client}</option>
               ))}
             </select>
-            <input
-              type="datetime-local"
+            <DatePicker
+              selected={editingData.interviewDateTime}
+              onChange={(date) => handleDateChange(date, 'interviewDateTime')}
+              showTimeSelect
+              timeFormat="HH:mm"
+              timeIntervals={30} // 30-minute interval
+              dateFormat="yyyy-MM-dd HH:mm"
               name="interviewDateTime"
-              onChange={handleInputChange}
-              value={formatDate(editingData.interviewDateTime) || ''}
               required
               disabled={modalMode === 'view'}
             />
@@ -242,11 +244,14 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
               </>
             )}
             {editingData.clientDecision === 'Missed Interview' && (
-              <input
-                type="datetime-local"
+              <DatePicker
+                selected={editingData.rescheduleDateTime}
+                onChange={(date) => handleDateChange(date, 'rescheduleDateTime')}
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={30} // 30-minute interval
+                dateFormat="yyyy-MM-dd HH:mm"
                 name="rescheduleDateTime"
-                onChange={handleInputChange}
-                value={formatDate(editingData.rescheduleDateTime) || ''}
                 required
                 disabled={modalMode === 'view'}
               />

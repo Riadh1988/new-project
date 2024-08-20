@@ -6,6 +6,8 @@ import Modal from '../../components/Modal';
 import { CSVLink } from 'react-csv';
  import { useSession } from 'next-auth/react';
  import { useRouter } from 'next/router';
+ import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 export default function Recrutement() {
   const [languages, setLanguages] = useState([]);
   const [candidatures, setCandidatures] = useState([]);
@@ -87,7 +89,12 @@ export default function Recrutement() {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
-
+  const handleDateChange = (date) => {
+    setFormData(prev => ({
+      ...prev,
+      interviewDateTime: date ? date.toISOString().slice(0, -1) : ''
+    }));
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -260,13 +267,16 @@ export default function Recrutement() {
                   <option key={client._id} value={client._id}>{client.client}</option>
                 ))}
               </select>
-              <input
-                  type="datetime-local"
-                  name="interviewDateTime"
-                  onChange={handleChange}
-                  value={formData.interviewDateTime ? new Date(formData.interviewDateTime).toISOString().slice(0, -1) : ''} // Handle invalid date
-                  required
-                />
+              <DatePicker
+                selected={formData.interviewDateTime ? new Date(formData.interviewDateTime) : null}
+                onChange={handleDateChange}
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={30} // 30-minute interval
+                dateFormat="yyyy-MM-dd HH:mm"
+                name="interviewDateTime"
+                required
+        />
               <button type="submit">Save</button>
             </form>
           </Modal>

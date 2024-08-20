@@ -109,8 +109,9 @@ a {
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 16px;
-  width: calc(20% - 16px); /* 5 cards per row with gap */
+  width: calc(33% - 16px); /* 5 cards per row with gap */
   box-sizing: border-box;
+  position: relative;
 }
 
 /* Card background based on status */
@@ -130,6 +131,17 @@ a {
   padding: 10px 16px;
   border-radius: 4px;
   cursor: pointer;
+  width: 49%;
+}
+.buttons-live{
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.live-chat-button {
+  background-color: #ff6f00 !important;
+   
 }
 
 .card button:hover {
@@ -669,21 +681,21 @@ ul{
 }
 
 .tick-left {
-  width: 30%;
+  width: 25%;
   padding: 20px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   background-color: #f9f9f9;
 }
 
 .tick-right {
-  width: 68%;
+  width: 73%;
   padding: 20px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   background-color: #f9f9f9;
 }
 
 .tick-holder .card { 
-  width: calc(30% - 16px); 
+  width: calc(33% - 10px); 
   margin-top: 20px;
 }
 
@@ -938,4 +950,169 @@ textarea{
   letter-spacing: 1px;
   float: right;
   margin-top: 14px;
+}
+
+.chat-boxes {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 10px;
+  padding: 10px;
+  z-index: 1000;
+}
+
+.chat-box {
+  width: 300px;
+  max-height: 500px; /* Limit height for scrolling */
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.chat-header {
+  background-color: #007bff;
+  color: white;
+  padding: 10px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.close-chat {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.chat-body {
+  flex: 1;
+  max-height: 300px; /* Fixed height for chat body */
+  overflow-y: auto; /* Enables vertical scrolling */
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: #f9f9f9; /* Optional: Add a background color for better visibility */
+  border-bottom: 1px solid #ddd;
+  min-height: 300px;
+}
+.tik-sp span{
+display: block;
+}
+
+.message {
+  max-width: 80%;
+  padding: 10px;
+  border-radius: 10px;
+  position: relative;
+  word-wrap: break-word;
+}
+
+.message.sent {
+  align-self: flex-end;
+  background-color: #007bff;
+  color: white;
+}
+
+.message.received {
+  align-self: flex-start;
+  background-color: #f1f0f0;
+}
+
+.message-time {
+  display: block;
+  font-size: 12px;
+  color: #888;
+  margin-top: 5px;
+}
+
+.chat-footer {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #ddd;
+  padding: 10px;
+}
+
+.file-upload {
+  margin-right: 10px;
+}
+
+.chat-footer input[type="text"] {
+  flex: 1;
+  border: none;
+  padding: 10px;
+  border-bottom-left-radius: 8px;
+}
+
+.chat-footer button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-bottom-right-radius: 8px;
+  cursor: pointer;
+}
+.card-inner-top{
+  margin-bottom: 20px;
+  text-align: center;
+}
+.ab-top{
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.spin-progress{
+  background: orange;
+  padding: 3px 10px 3px 10px;
+  border-radius: 50px;
+  color: #fff;
+}
+.spsolved {
+  background: #208237;
+  padding: 3px 10px 3px 10px;
+  border-radius: 50px;
+  color: #fff;
+}
+.card-inner-bottom{
+  margin-bottom: 20px;
+}
+
+.chat-box {
+  position: relative;
+}
+
+.chat-header {
+  cursor: pointer;
+  /* Add any additional styling */
+}
+
+.chat-body,
+.chat-footer {
+  transition: opacity 0.3s ease;
+}
+
+.chat-body.hidden,
+.chat-footer.hidden {
+  opacity: 0;
+  pointer-events: none; /* Prevents interaction when hidden */
+}
+.blink {
+  animation: blink-animation 1s infinite;
+}
+
+@keyframes blink-animation {
+  0% { background-color: #ff0; }
+  50% { background-color: #fff; }
+  100% { background-color: #ff0; }
 }

@@ -1,37 +1,51 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import Layout from '@/components/Layout';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import Layout from '@/components/Layout';
-export default function UserTickets() {
-  const { data: session, status } = useSession();
+import io from 'socket.io-client';
+
+let socket;
+
+export default function UserTicketList() {
+  const [tickets, setTickets] = useState([]);
+  const [activeChats, setActiveChats] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [isVisible, setIsVisible] = useState(true);
+  const endOfMessagesRef = useRef(null);
+  const { data: session } = useSession();
   const [ticketType, setTicketType] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [formData, setFormData] = useState({});
-  const [tickets, setTickets] = useState([]); 
-  const [statusFilter, setStatusFilter] = useState(''); 
-  const router = useRouter();
-  
 
   useEffect(() => {
-    if (session) {
-      fetchTickets();
-    }
-    if (!session) {
-      router.push('/');
-      return; 
-    }
-  }, [session, router]);
-  
+    socket = io();
+    socket.on('message', (message) => {
+      setMessages((prevMessages) => [...prevMessages, message]);
+      scrollToBottom();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    fetchTickets();
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const fetchTickets = async () => {
     try {
       const response = await axios.get('/api/tickets');
-      setTickets(response.data.data);
+      const sortedTickets = response.data.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setTickets(sortedTickets);
     } catch (error) {
       console.error('Error fetching tickets:', error);
     }
   };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
@@ -49,9 +63,61 @@ export default function UserTickets() {
     }
   };
 
+  const openChatBox = async (ticketId) => {
+    setActiveChats((prevChats) => {
+      if (prevChats.some((chat) => chat.id === ticketId)) {
+        return prevChats;
+      }
+      return [...prevChats, { id: ticketId }];
+    });
+
+    try {
+      const response = await axios.get(`/api/tickets/${ticketId}/messages`);
+      setMessages(response.data);
+      socket.emit('join', ticketId);
+      scrollToBottom();
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    }
+  };
+
+  const handleSendMessage = (ticketId, messageText) => {
+    const message = {
+      sender: session.user.email,
+      text: messageText,
+      createdAt: new Date(),
+    };
+
+    socket.emit('message', { ticketId, message });
+    setMessages((prevMessages) => [...prevMessages, message]);
+    scrollToBottom();
+  };
+
+  const handleSendClick = (ticketId) => {
+    const messageText = document.querySelector(`#chat-input-${ticketId}`).value;
+    handleSendMessage(ticketId, messageText);
+    document.querySelector(`#chat-input-${ticketId}`).value = '';
+    console.log(messageText)
+  };
+
+  const closeChatBox = (ticketId) => {
+    setActiveChats((prevChats) => prevChats.filter((chat) => chat.id !== ticketId));
+  };
+
+  const scrollToBottom = () => {
+    endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleToggleVisibility = () => {
+    setIsVisible((prevState) => !prevState);
+  };
+  const filteredTickets = tickets.filter((ticket) => {
+    if (statusFilter === '') return true;
+    return ticket.status === statusFilter;
+  });
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const formDataToSend = new FormData();
     formDataToSend.append('type', ticketType);
     Object.keys(formData).forEach((key) => {
@@ -62,10 +128,9 @@ export default function UserTickets() {
       }
     });
     formDataToSend.append('user', session.user.email);
-  
-    // Format formData for email text
-    let emailText = `Ticket of type ${ticketType} has been created.\n\n`; 
-    `Ticket Opend by: ${session.user.email}\n`
+
+    let emailText = `Ticket of type ${ticketType} has been created.\n\n`;
+    emailText += `Ticket Opened by: ${session.user.email}\n`;
     for (const [key, value] of Object.entries(formData)) {
       if (value instanceof File) {
         emailText += `${key}: [File Attached]\n`;
@@ -73,21 +138,20 @@ export default function UserTickets() {
         emailText += `${key}: ${value}\n`;
       }
     }
-  
+
     try {
       const res = await axios.post('/api/tickets', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-  
-      // Send email with dynamic text
+
       await axios.post('/api/send-email', {
         to: session.user.email,
         subject: `Ticket Created: ${ticketType}`,
         text: emailText,
       });
-  
+
       setFormData({});
       setTicketType('');
       fetchTickets();
@@ -95,25 +159,9 @@ export default function UserTickets() {
       console.error('Error submitting ticket:', error.response ? error.response.data : error.message);
     }
   };
-  
-  
-
-  // Filter tickets based on statusFilter
-  const filteredTickets = tickets.filter(ticket => {
-    if (statusFilter === '') return true;
-    return ticket.status === statusFilter;
-  });
-
-  if (status === 'loading') {
-    return <div>Loading...</div>;
-  }
-
-  if (!session) {
-    return <div>You need to be signed in to view this page.</div>;
-  }
   return (
     <Layout>
-      <div className='tick-holder'>
+       <div className='tick-holder'>
       <div className='tick-left'>
       <h1>Create a Ticket</h1>
       <div>
@@ -475,69 +523,106 @@ export default function UserTickets() {
         </select>
       </div>
       
-      <div className='holder-card'>
-      {filteredTickets.length === 0 ? (
-          <p>No tickets found.</p>
-        ) : (filteredTickets.map((ticket) => (
+      <div className="holder-card">
+        {tickets.map((ticket) => (
           <div
             key={ticket._id}
             className={`card ${ticket.status === 'solved' ? 'solved' : 'in-progress'}`}
           >
-            <p><strong>Type:</strong> {ticket.type}</p>
-            <p><strong>Status:</strong> {ticket.status}</p>
-            <p><strong>User Email:</strong> {ticket.user}</p>
-            <p><strong>Date:</strong> {new Date(ticket.createdAt).toLocaleString()}</p>
-   
-            <div>
-              {Object.entries(ticket.additionalData).map(([key, value]) => (
-                <p key={key}><strong>{key}:</strong> {formatValue(key, value)}</p>
-              ))}
+            <div className="card-inner">
+              <div className="ab-top">
+                <span className={`sp${ticket.status === 'solved' ? 'solved' : 'in-progress'}`}>
+                  {ticket.status}
+                </span>
+                <span className="ab-top-dt">
+                  {new Date(ticket.createdAt).toLocaleString()}
+                </span>
+              </div>
+              <div className="card-inner-top">
+                <h3><strong>{ticket.type}</strong></h3>
+              </div>
+              <div className="card-inner-bottom">
+                {Object.entries(ticket.additionalData).map(([key, value]) => (
+                  <p key={key}><strong>{key}:</strong> {formatValue(key, value)}</p>
+                ))}
+              </div>
             </div>
+
+            {ticket.messages && ticket.messages.length > 0 && (
+              <div className="buttons-live">
+                <button
+                  className="live-chat-button"
+                  onClick={() => openChatBox(ticket._id)}
+                >
+                  Live Chat
+                </button>
+              </div>
+            )}
+            
           </div>
-       ) ))}
+        ))}
       </div>
       </div>
+      </div>
+       
+
+      <div className="chat-boxes">
+        {activeChats.map((chat) => (
+          <div key={chat.id} className="chat-box">
+            <div className="chat-header" onClick={handleToggleVisibility}>
+              <div className="tik-sp">
+                <span>Ticket ID: {chat.id}</span>
+              </div>
+              <button onClick={() => closeChatBox(chat.id)} className="close-chat">X</button>
+            </div>
+            {isVisible && (
+              <>
+                <div className="chat-body">
+                  {messages.map((message, index) => (
+                    <div
+                    key={message._id}
+                      className={`message ${message.sender === session.user.email ? 'sent' : 'received'}`}
+                    >
+                      <span>{message.sender}:</span> {message.text}
+                      <br />
+                      <small>{new Date(message.createdAt).toLocaleString()}</small>
+                    </div>
+                  ))}
+                  <div ref={endOfMessagesRef} />
+                </div>
+                <div className="chat-footer">
+                  <input
+                    id={`chat-input-${chat.id}`}
+                    type="text"
+                    placeholder="Type a message..."
+                  />
+                  <button onClick={() => handleSendClick(chat.id)}>Send</button>
+                </div>
+              </>
+            )}
+          </div>
+        ))}
       </div>
     </Layout>
   );
 }
 
-function formatValue(key, value) {
- 
-
-  // Convert string values 'true' and 'false' to boolean
-  if (typeof value === 'string') {
-    const lowerValue = value.toLowerCase();
-    if (lowerValue === 'true') return 'Yes';
-    if (lowerValue === 'false') return 'No';
+const formatValue = (key, value) => {
+  if (key === 'screenshot' && value) {
+    return (
+      <a href={value} target="_blank" rel="noopener noreferrer">
+        Click here
+      </a>
+    );
+  } else if (typeof value === 'string') {
+    return value;
+  } else if (Array.isArray(value)) {
+    return value.join(', ');
+  } else if (typeof value === 'object') {
+    return JSON.stringify(value);
+  } else if (value instanceof Date) {
+    return value.toLocaleDateString();
+  } else {
+    return String(value);
   }
-
-  // Handle boolean values
-  if (typeof value === 'boolean') {
-    return value ? 'Yes' : 'No';
-  }
-
-  // Handle files separately
-  if (key === 'files') {
-    if (Array.isArray(value)) {
-      return value.map((fileUrl, index) => (
-        <a key={index} href={fileUrl} target="_blank" rel="noopener noreferrer">
-          View File {index + 1}
-        </a>
-      ));
-    } else {
-      return (
-        <a href={value} target="_blank" rel="noopener noreferrer">
-          View File
-        </a>
-      );
-    }
-  }
-
-  // Return other values directly
-  return value;
-}
-
-
-
-
+};
