@@ -13,26 +13,30 @@ const HomePage = () => {
       ) : session ? (
         <Layout>
            <div className="contain">
-    <div className="grid-item">
-      <Link href="/reverse">Reverse</Link>
-    </div>
-    <div className="grid-item">
-      <Link href="/recrutement">Recruitment</Link>
-    </div>
-     
-    <div className="grid-item">
-      <Link href="/tickets/user">Tickets users</Link>
-    </div>
-    <div className="grid-item">
-      <Link href="/tickets/admin">Tickets admin</Link>
-    </div>
-    <div className="grid-item">
-      <Link href="/utils">Add Utils</Link>
-    </div>
-    <div className="grid-item">
-      <Link href="/admin/users">Add Users</Link>
-    </div>
-  </div>
+              <div className="grid-item">
+                <Link href="/reverse">Reverse</Link>
+              </div>
+              <div className="grid-item">
+                <Link href="/recrutement">Recruitment</Link>
+              </div>
+              
+              <div className="grid-item">
+                <Link href="/tickets/user">Tickets users</Link>
+              </div>
+              <div className="grid-item">
+                <Link href="/tickets/admin">Tickets admin</Link>
+              </div>
+              <div className="grid-item">
+                <Link href="/utils">Add Utils</Link>
+              </div>
+              <div className="grid-item">
+                <Link href="/admin/users">Add Users</Link>
+              </div>
+              <div className="grid-item">
+                <Link href="/attendence">Attendence</Link>
+              </div>
+            </div>
+
         </Layout>
       ) : (
         <div className='signin'> 

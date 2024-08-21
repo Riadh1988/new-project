@@ -2,7 +2,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-const Modal = ({ show, onClose, children }) => {
+const Modal = ({ show, onClose,addition, children }) => {
    
   if (!show) return null;
 
@@ -12,7 +12,7 @@ const Modal = ({ show, onClose, children }) => {
     return null;
   }
   return ReactDOM.createPortal(
-    <div className="modalOverlay">
+    <div className={`modalOverlay ${addition}`}>
       <div className="modalContent" >
         <button className="closeButton" onClick={onClose}>X</button>
         {children}

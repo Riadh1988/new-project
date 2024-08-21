@@ -41,7 +41,8 @@ export default function Nav({ clients }) { // Receive clients as props
         <Link href="/tickets/admin" className="addNew">
         Tickets Admin
         </Link>
-        <Link href="/utils" className="addNew">Add Utils</Link>
+        <Link href="/attendence" className="addNew">Attendence</Link>
+        <Link href="/utils" className="addNew">Attendence</Link>
         <Link href="/admin/users" className="addNew">Add Users</Link>
       </aside>
       <button 
