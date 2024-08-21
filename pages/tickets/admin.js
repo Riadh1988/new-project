@@ -23,16 +23,16 @@ export default function AdminTicketList() {
     }
 
     socket = io();
-    socket.on('message', (message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
-      scrollToBottom();
-    });
+  socket.on('message', (message) => {
+    setMessages((prevMessages) => [...prevMessages, message]);
+    scrollToBottom();
+  });
 
-    return () => {
-      socket.disconnect();
-    };
+  return () => {
+    socket.disconnect();
+  };
   }, [status, session, router]);
-  
+
   useEffect(() => {
     const interval = setInterval(fetchTickets, 5000);
     return () => clearInterval(interval);
@@ -71,14 +71,15 @@ export default function AdminTicketList() {
   const handleSendMessage = (ticketId, messageText) => {
     const message = {
       sender: session.user.email,
+      receiver: tickets.find((ticket) => ticket._id === ticketId)?.user,
       text: messageText,
       createdAt: new Date(),
     };
-
-    socket.emit('message', { ticketId, message });
-    setMessages((prevMessages) => [...prevMessages, message]);
+  
+    socket.emit('message', { ticketId, message }); 
     scrollToBottom();
   };
+  
   
 
   const handleSendClick = (ticketId) => {
@@ -175,44 +176,45 @@ export default function AdminTicketList() {
       </div>
 
       <div className="chat-boxes">
-        {activeChat &&
-        (
-          <div className="chat-box">
-            <div className="chat-header" onClick={handleToggleVisibility}>
-              <div className="tik-sp">
-                <span>User: {activeChat.user.split('@')[0]}</span>
-                <span>Ticket Type: {activeChat.type}</span>
-              </div>
-              <button onClick={closeChatBox} className="close-chat">X</button>
-            </div>
-            {isVisible && (
-              <>
-                <div className="chat-body">
-                  {messages.map((message, index) => (
-                    <div
-                      key={index} // Use index as key if message._id is not available
-                      className={`message ${message.sender === session.user.email ? 'sent' : 'received'}`}
-                    >
-                      <span>{message.sender}:</span> {message.text}
-                      <br />
-                      <small>{new Date(message.createdAt).toLocaleString()}</small>
-                    </div>
-                  ))}
-                  <div ref={endOfMessagesRef} />
-                </div>
-                <div className="chat-footer">
-                  <input
-                    id={`chat-input-${activeChat.id}`} // Use activeChat.id for input id
-                    type="text"
-                    placeholder="Type a message..."
-                  />
-                  <button onClick={() => handleSendClick(activeChat.id)}>Send</button>
-                </div>
-              </>
-            )}
-          </div>
-        )}
+  {activeChat &&
+  (
+    <div className="chat-box">
+      <div className="chat-header" onClick={handleToggleVisibility}>
+        <div className="tik-sp">
+          <span>User: {activeChat.user.split('@')[0]}</span>
+          <span>Ticket Type: {activeChat.type}</span>
+        </div>
+        <button onClick={closeChatBox} className="close-chat">X</button>
       </div>
+      {isVisible && (
+        <>
+          <div className="chat-body">
+            {messages.map((message, index) => (
+              <div
+                key={index} // Use index as key if message._id is not available
+                className={`message ${message.sender === session.user.email ? 'sent' : 'received'}`}
+              >
+                <span><strong>{message.sender.split('@')[0]}:</strong></span> <br />
+                {message.text}
+                <br />
+                <small className='time-message'>{new Date(message.createdAt).toLocaleString()}</small>
+              </div>
+            ))}
+            <div ref={endOfMessagesRef} />
+          </div>
+          <div className="chat-footer">
+            <input
+              id={`chat-input-${activeChat.id}`} // Use activeChat.id for input id
+              type="text"
+              placeholder="Type a message..."
+            />
+            <button onClick={() => handleSendClick(activeChat.id)}>Send</button>
+          </div>
+        </>
+      )}
+    </div>
+  )}
+</div>
     </Layout>
   );
 }

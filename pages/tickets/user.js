@@ -579,7 +579,11 @@ export default function UserTicketList() {
           <div className="chat-box">
             <div className="chat-header" onClick={handleToggleVisibility}>
               <div className="tik-sp">
-                <span>Ticket ID: {activeChat}</span>
+              {tickets
+                .filter((ticket) => ticket._id === activeChat)
+                .map((ticket) => (
+                  <span key={ticket._id}>ticket: {ticket.type}</span>
+                ))}
               </div>
               <button onClick={() => closeChatBox(activeChat)} className="close-chat">X</button>
             </div>
@@ -591,10 +595,11 @@ export default function UserTicketList() {
                     key={message._id}
                       className={`message ${message.sender === session.user.email ? 'sent' : 'received'}`}
                     >
-                      <span>{message.sender}:</span> {message.text}
-                      <br />
-                      <small>{new Date(message.createdAt).toLocaleString()}</small>
-                    </div>
+                      <span><strong>{message.sender.split('@')[0]}:</strong></span> <br />
+                {message.text}
+                <br />
+                <small className='time-message'>{new Date(message.createdAt).toLocaleString()}</small>
+              </div>
                   ))}
                   <div ref={endOfMessagesRef} />
                 </div>
