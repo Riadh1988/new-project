@@ -117,8 +117,7 @@ const AttendancePage = () => {
   
   return (
 
-    <Layout>
-      <h1>Weekly Attendance</h1>
+    <Layout> 
       <div className="week-navigation">
         <span onClick={handlePreviousWeek} disabled={!canShowPreviousWeek}>Previous Week</span>
         <span onClick={handleNextWeek} disabled={!canShowNextWeek}>Next Week</span>
@@ -155,7 +154,7 @@ const AttendancePage = () => {
                     style={{ backgroundColor: getStatusColor(currentStatus), cursor: 'pointer' }}
                     onClick={() => handleCellClick(agent, index, currentStatus)}
                   >
-                    {currentStatus}
+                    {getStatusText(currentStatus)}
                   </td>
                 );
               })}
@@ -166,19 +165,19 @@ const AttendancePage = () => {
 
       {/* Individual Agent Modal */}
       <Modal show={showModal} onClose={() => setShowModal(false)}>
-        <h2>{selectedAgent?.name}'s Attendance on {selectedCells.map(cell => weekDays[cell.dayIndex].dayName).join(', ')}</h2>
+        <h2>{selectedAgent?.name}&apos;s Attendance on {selectedCells.map(cell => weekDays[cell.dayIndex].dayName).join(', ')}</h2>
         <label>
           Change Status:
           <select value={status} onChange={handleStatusChange}>
-          <option value="present-of">Present OF</option>
-        <option value="present-wfh">Present WFH</option>
-        <option value="absent">Absent</option>
-        <option value="sickleave">Sick Leave</option>
-        <option value="weekend">Weekend</option>
-        <option value="vacation">Vacation</option>
-        <option value="holiday">Holiday</option>
-        <option value="day-off">Day Off</option>
-        <option value="work-holiday">Work on holiday</option>
+            <option value="present-of">Present OF</option>
+            <option value="present-wfh">Present WFH</option>
+            <option value="absent">Absent</option>
+            <option value="sickleave">Sick Leave</option>
+            <option value="weekend">Weekend</option>
+            <option value="vacation">Vacation</option>
+            <option value="holiday">Holiday</option>
+            <option value="day-off">Day Off</option>
+            <option value="work-holiday">Work on holiday</option>
           </select>
         </label>
         <button onClick={handleSubmit}>Submit</button>
@@ -186,39 +185,38 @@ const AttendancePage = () => {
 
       {/* Group Edit Modal */}
       <Modal show={showGroupModal} onClose={() => setShowGroupModal(false)} addition='addit-mod'>
-  <h2>Edit Group Attendance</h2>
-  <div className='modal-group'>
-    {selectedAgents.map((agent) => ( 
-        <span key={agent.id} onClick={() => handleRemoveAgent(agent.id)}>{agent.name}</span>
-        
-       
-    ))}
-  </div>
-  <div>
-    <label>
-      Select Date:
-      <DatePicker selected={groupDate} onChange={(date) => setGroupDate(date)} />
-    </label>
-  </div>
-  <div>
-    <label>
-      Change Status for Selected Agents:
-      <select value={status} onChange={handleStatusChange}>
-      <option value="present-of">Present OF</option>
-        <option value="present-wfh">Present WFH</option>
-        <option value="absent">Absent</option>
-        <option value="sickleave">Sick Leave</option>
-        <option value="weekend">Weekend</option>
-        <option value="vacation">Vacation</option>
-        <option value="holiday">Holiday</option>
-        <option value="day-off">Day Off</option>
-        <option value="work-holiday">Work on holiday</option>
-      </select>
-    </label>
-  </div>
-  <button onClick={handleGroupSubmit}>Apply to Group</button>
-</Modal>
-
+        <h2>Edit Group Attendance</h2>
+        <div className='modal-group'>
+          {selectedAgents.map((agent) => (
+            <span key={agent.id} onClick={() => handleRemoveAgent(agent.id)}>
+              {agent.name}
+            </span>
+          ))}
+        </div>
+        <div>
+          <label>
+            Select Date:
+            <DatePicker selected={groupDate} onChange={(date) => setGroupDate(date)} />
+          </label>
+        </div>
+        <div>
+          <label>
+            Change Status for Selected Agents:
+            <select value={status} onChange={handleStatusChange}>
+              <option value="present-of">Present OF</option>
+              <option value="present-wfh">Present WFH</option>
+              <option value="absent">Absent</option>
+              <option value="sickleave">Sick Leave</option>
+              <option value="weekend">Weekend</option>
+              <option value="vacation">Vacation</option>
+              <option value="holiday">Holiday</option>
+              <option value="day-off">Day Off</option>
+              <option value="work-holiday">Work on holiday</option>
+            </select>
+          </label>
+        </div>
+        <button onClick={handleGroupSubmit}>Apply to Group</button>
+      </Modal>
 
       <div id="modal-root"></div>
     </Layout>
@@ -247,6 +245,30 @@ const getStatusColor = (status) => {
       return '#FF5722';  
     default:
       return '#FFFFFF';  
+  }
+};
+const getStatusText = (status) => {
+  switch (status) {
+    case 'present-of':
+      return 'Present In Office';
+    case 'present-wfh':
+      return 'Present From Home';
+    case 'absent':
+      return 'Absent';
+    case 'sickleave':
+      return 'Sick Leave';
+    case 'weekend':
+      return 'Weekend';
+    case 'vacation':
+      return 'Vacation';
+    case 'holiday':
+      return 'Holiday';
+    case 'day-off':
+      return 'Day Off';
+    case 'work-holiday':
+      return 'Work on Holiday';
+    default:
+      return 'Unknown Status';
   }
 };
 
