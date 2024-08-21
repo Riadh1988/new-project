@@ -23,9 +23,11 @@ export default function AdminTicketList() {
     }
 
     socket = io();
+    const notificationSound = new Audio('/notification.mp3');
   socket.on('message', (message) => {
     setMessages((prevMessages) => [...prevMessages, message]);
     scrollToBottom();
+    notificationSound.play();
   });
 
   return () => {
