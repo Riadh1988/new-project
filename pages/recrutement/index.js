@@ -5,7 +5,7 @@ import CustomTable from '../../components/CustomTable';
 import Modal from '../../components/Modal';
 import { CSVLink } from 'react-csv';
  import { useSession } from 'next-auth/react';
- import { useRouter } from 'next/router';
+ import { useRouter } from 'next/router'; 
  import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 export default function Recrutement() {
@@ -28,7 +28,7 @@ export default function Recrutement() {
   });
 
   const { data: session, status } = useSession();
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   useEffect(() => {
     if (status === 'loading') return; // Wait for session to load
 
@@ -67,7 +67,22 @@ export default function Recrutement() {
   
     fetchData();
   }, []);
-  
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'language') {
+      const options = e.target.options;
+      const selectedLanguages = [];
+      for (let i = 0, len = options.length; i < len; i++) {
+        if (options[i].selected) {
+          selectedLanguages.push(options[i].value);
+        }
+      }
+      setFormData(prev => ({ ...prev, language: selectedLanguages }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
    
   
   const mapCandidaturesWithClients = useMemo(() => {
@@ -98,7 +113,7 @@ export default function Recrutement() {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setIsSubmitting(true);
     const formDataObject = new FormData();
     formDataObject.append('candidateName', formData.candidateName);
     formDataObject.append('phone', formData.phone);
@@ -134,7 +149,7 @@ export default function Recrutement() {
         candidateName: '',
         phone: '',
         email: '',
-        language: '',
+        language: [],
         clientToAssign: '',
         interviewDateTime: '',
         clientDecision: 'Pending',
@@ -143,7 +158,7 @@ export default function Recrutement() {
         rescheduleDateTime: '',
         fileUrl: '',
       });
-  
+      setIsSubmitting(false);
       setShowModal(false);
       setEditCandidature(null);
   
@@ -151,6 +166,7 @@ export default function Recrutement() {
       setCandidatures(candidaturesResponse.data);
     } catch (error) {
       console.error('Error submitting candidature:', error);
+      setIsSubmitting(false);
     }
   };
   
@@ -301,8 +317,13 @@ export default function Recrutement() {
               <input type="text" name="candidateName" placeholder="Candidate Name" onChange={handleChange} value={formData.candidateName} required />
               <input type="text" name="phone" placeholder="Phone" onChange={handleChange} value={formData.phone} required />
               <input type="email" name="email" placeholder="Email" onChange={handleChange} value={formData.email} required />
-              <select name="language" onChange={handleChange} value={formData.language} required>
-                <option value="">Select Language</option>
+              <select
+                name="language"
+                multiple
+                value={formData.language || []}
+                onChange={handleInputChange}
+                required
+              >
                 {languages.map(lang => (
                   <option key={lang._id} value={lang.language}>{lang.language}</option>
                 ))}
@@ -332,7 +353,7 @@ export default function Recrutement() {
                   onChange={handleFileChange}
                 />
               </div>
-              <button type="submit">Save</button>
+              <button type="submit" disabled={isSubmitting}>Submit</button>
             </form>
           </Modal>
         </div>

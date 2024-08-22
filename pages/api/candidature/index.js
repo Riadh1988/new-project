@@ -1,6 +1,5 @@
 import { mongooseConnect } from '@/lib/mongoose';
-import Candidature from '@/models/candidature';
-import Client from '@/models/client'; // Import the Client model
+import Candidature from '@/models/candidature'; 
 import { v2 as cloudinary } from 'cloudinary';
 import { IncomingForm } from 'formidable';
 
@@ -26,8 +25,7 @@ export default async function handler(req, res) {
 
   switch (method) {
     case 'GET':
-      try {
-        // Ensure the Client model is registered
+      try { 
         const candidatures = await Candidature.find().populate('clientToAssign', 'client');
         res.status(200).json(candidatures);
       } catch (error) {
@@ -47,8 +45,7 @@ export default async function handler(req, res) {
             return res.status(500).json({ success: false, error: 'Form parsing error' });
           }
   
-          console.log('Fields:', fields);
-          console.log('Files:', files);
+          
   
           const {
             candidateName,

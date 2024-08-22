@@ -1071,7 +1071,14 @@ display: block;
   background-color: #007bff;
   color: white;
 }
-
+.cell-border {
+  border: 1px solid #ccc; 
+  padding: 8px;
+}
+.addit-mod .modalContent{
+  min-width: 780px;
+  min-height: 400px;
+}
 .message.received {
   align-self: flex-start;
   background-color: #f1f0f0;

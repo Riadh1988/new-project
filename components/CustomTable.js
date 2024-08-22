@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import Modal from '../components/Modal'; // Import Modal component
+import Modal from '../components/Modal';
 import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import 'react-datepicker/dist/react-datepicker.css'; 
 
 const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, languages }) => {
   const [editingData, setEditingData] = useState({
@@ -9,7 +9,7 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
     candidateName: '',
     phone: '',
     email: '',
-    language: '',
+    language: [], // Update to array
     clientToAssign: '',
     interviewDateTime: '',
     clientDecision: '',
@@ -19,7 +19,8 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
   });
 
   const [showModal, setShowModal] = useState(false);
-  const [modalMode, setModalMode] = useState('view'); // Can be 'view' or 'edit'
+  const [modalMode, setModalMode] = useState('view'); 
+  const [isSubmitting, setIsSubmitting] = useState(false); // Track if submit button is clicked
 
   // Handle modal open
   const handleModalOpen = (candidature, mode) => {
@@ -28,7 +29,7 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
       candidateName: candidature.candidateName || '',
       phone: candidature.phone || '',
       email: candidature.email || '',
-      language: candidature.language || '',
+      language: candidature.language || [], // Handle array of languages
       clientToAssign: clients.find(client => client.client === candidature.clientToAssign)?._id || '',
       interviewDateTime: candidature.interviewDateTime ? new Date(candidature.interviewDateTime) : null,
       clientDecision: candidature.clientDecision || '',
@@ -42,6 +43,7 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
 
   // Handle save action
   const handleSaveClick = async () => {
+    setIsSubmitting(true); // Disable submit button once clicked
     try {
       const updatedData = {
         ...editingData,
@@ -58,7 +60,7 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
           candidateName: '',
           phone: '',
           email: '',
-          language: '',
+          language: [],
           clientToAssign: '',
           interviewDateTime: '',
           clientDecision: '',
@@ -67,16 +69,29 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
           rescheduleDateTime: '',
         });
         setShowModal(false);
-      }, 500); // Adjust delay time as needed (in milliseconds)
+        setIsSubmitting(false); // Reset the button state
+      }, 500);
     } catch (error) {
       console.error('Error saving changes:', error);
+      setIsSubmitting(false); // Reset the button state on error
     }
   };
 
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEditingData(prev => ({ ...prev, [name]: value }));
+    if (name === 'language') {
+      const options = e.target.options;
+      const selectedLanguages = [];
+      for (let i = 0, len = options.length; i < len; i++) {
+        if (options[i].selected) {
+          selectedLanguages.push(options[i].value);
+        }
+      }
+      setEditingData(prev => ({ ...prev, language: selectedLanguages }));
+    } else {
+      setEditingData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   // Handle date changes for DatePicker
@@ -146,124 +161,41 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
       {/* Unified Modal */}
       {showModal && (
         <Modal
-          show={showModal}
-          onClose={() => setShowModal(false)}
-        >
-          <h2>{modalMode === 'edit' ? 'Edit Candidature' : 'View Candidature'}</h2>
-          <form onSubmit={(e) => { e.preventDefault(); modalMode === 'edit' && handleSaveClick(); }}>
-            <input
-              type="text"
-              name="candidateName"
-              placeholder="Candidate Name"
-              onChange={handleInputChange}
-              value={editingData.candidateName || ''}
-              required
-              disabled={modalMode === 'view'}
-            />
-            <input
-              type="text"
-              name="phone"
-              placeholder="Phone"
-              onChange={handleInputChange}
-              value={editingData.phone || ''}
-              required
-              disabled={modalMode === 'view'}
-            />
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              onChange={handleInputChange}
-              value={editingData.email || ''}
-              required
-              disabled={modalMode === 'view'}
-            />
-            <select
-              name="language"
-              onChange={handleInputChange}
-              value={editingData.language || ''}
-              required
-              disabled={modalMode === 'view'}
-            >
-              <option value="">Select Language</option>
-              {languages.map(lang => (
-                <option key={lang._id} value={lang.language}>{lang.language}</option>
-              ))}
-            </select>
-            <select
-              name="clientToAssign"
-              onChange={handleInputChange}
-              value={editingData.clientToAssign || ''}
-              required
-              disabled={modalMode === 'view'}
-            >
-              <option value="">Select Client to Assign</option>
-              {clients.map(client => (
-                <option key={client._id} value={client._id}>{client.client}</option>
-              ))}
-            </select>
+        show={showModal}
+        onClose={() => setShowModal(false)}
+      >
+        <h2>{modalMode === 'edit' ? 'Edit Candidature' : 'View Candidature'}</h2>
+        <form onSubmit={(e) => { e.preventDefault(); modalMode === 'edit' && handleSaveClick(); }}>
+          {/* Other form fields */}
+          <select
+            name="language"
+            multiple
+            onChange={handleInputChange}
+            value={editingData.language || []}
+            required
+            disabled={modalMode === 'view'}
+          >
+            {languages.map(lang => (
+              <option key={lang._id} value={lang.language}>{lang.language}</option>
+            ))}
+          </select>
+          {/* Conditional interviewDateTime field based on client */}
+          {editingData.clientToAssign !== 'Other' && (
             <DatePicker
               selected={editingData.interviewDateTime}
               onChange={(date) => handleDateChange(date, 'interviewDateTime')}
               showTimeSelect
               timeFormat="HH:mm"
-              timeIntervals={30} // 30-minute interval
+              timeIntervals={30}
               dateFormat="yyyy-MM-dd HH:mm"
               name="interviewDateTime"
               required
               disabled={modalMode === 'view'}
             />
-            <select
-              name="clientDecision"
-              onChange={handleClientDecisionChange}
-              value={editingData.clientDecision || ''}
-              required
-              disabled={modalMode === 'view'}
-            >
-              <option value="Pending">Pending</option>
-              <option value="Accepted">Accepted</option>
-              <option value="Refused">Refused</option>
-              <option value="Missed Interview">Missed Interview</option>
-            </select>
-            {editingData.clientDecision === 'Refused' && (
-              <>
-                <select
-                  name="declineReason"
-                  onChange={handleInputChange}
-                  value={editingData.declineReason || ''}
-                  required
-                  disabled={modalMode === 'view'}
-                >
-                  <option value="">Select Decline Reason</option>
-                  <option value="No good languages">No good languages</option>
-                  <option value="Not available">Not available</option>
-                  <option value="Other">Other</option>
-                </select>
-                <textarea
-                  name="declineComment"
-                  placeholder="Decline Comment"
-                  onChange={handleInputChange}
-                  value={editingData.declineComment || ''}
-                  disabled={modalMode === 'view'}
-                />
-              </>
-            )}
-            {editingData.clientDecision === 'Missed Interview' && (
-              <DatePicker
-                selected={editingData.rescheduleDateTime}
-                onChange={(date) => handleDateChange(date, 'rescheduleDateTime')}
-                showTimeSelect
-                timeFormat="HH:mm"
-                timeIntervals={30} // 30-minute interval
-                dateFormat="yyyy-MM-dd HH:mm"
-                name="rescheduleDateTime"
-                required
-                disabled={modalMode === 'view'}
-              />
-            )}
-            {modalMode === 'edit' && <button type="submit">Save</button>}
-          </form>
-        </Modal>
+          )}
+          {modalMode === 'edit' && <button type="submit" disabled={isSubmitting}>Save</button>}
+        </form>
+      </Modal>
       )}
     </div>
   );
