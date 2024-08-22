@@ -165,16 +165,12 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
         Download CV
       </a>
     ) : column.accessor === 'language' ? (
-      row[column.accessor] && Array.isArray(row[column.accessor]) ? (
         row[column.accessor].map((language, index) => (
           <span key={index} className="lnsp">
             {language}
           </span>
         ))
-      ) : (
-        <span>{row[column.accessor]}</span>
-      )
-    ) : column.accessor === 'clientDecision' ? (
+      ) : column.accessor === 'clientDecision' ? (
       <span
         style={{ cursor: 'pointer', color: 'blue' }}
         onClick={() => handleModalOpen(row, 'edit')}

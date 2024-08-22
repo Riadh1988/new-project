@@ -44,9 +44,7 @@ export default async function handler(req, res) {
             console.error('Error parsing form:', err);
             return res.status(500).json({ success: false, error: 'Form parsing error' });
           }
-  
-          
-  
+        
           const {
             candidateName,
             phone,
@@ -55,25 +53,30 @@ export default async function handler(req, res) {
             clientToAssign,
             interviewDateTime,
           } = fields;
-  
+        
           // Extract the first value from each array
           const candidateNameValue = candidateName[0];
           const phoneValue = phone[0];
           const emailValue = email[0];
-          const languageValue = language[0];
+          
+          // Ensure the language value is an array, split by commas if necessary
+          const languageValue = language[0].includes(',')
+            ? language[0].split(',').map(lang => lang.trim())
+            : [language[0]];
+        
           const clientToAssignValue = clientToAssign ? clientToAssign[0] : null;
           const interviewDateTimeValue = interviewDateTime ? interviewDateTime[0] : null;
-  
+        
           let fileUrl = null;
-  
+        
           if (files.fileUrl && files.fileUrl[0]) {
             try {
               const file = files.fileUrl[0];
-  
+        
               const uploadResult = await cloudinary.uploader.upload(file.filepath, {
                 folder: 'candidature_files', // You can change the folder name as needed
               });
-  
+        
               fileUrl = uploadResult.secure_url;
               console.log('Uploaded file URL:', fileUrl); // Log uploaded file URL
             } catch (uploadError) {
@@ -84,26 +87,27 @@ export default async function handler(req, res) {
             console.error('No file provided or file path is missing');
             return res.status(400).json({ success: false, error: 'No file provided or file path is missing' });
           }
-  
+        
           try {
             const candidature = new Candidature({
               candidateName: candidateNameValue,
               phone: phoneValue,
               email: emailValue,
-              language: languageValue,
+              language: languageValue, // Save the language array to the database
               clientToAssign: clientToAssignValue,
               interviewDateTime: interviewDateTimeValue,
               fileUrl, // Save the Cloudinary file URL to the database
             });
-  
+        
             await candidature.save();
-  
+        
             res.status(201).json({ success: true, data: candidature });
           } catch (saveError) {
             console.error('Error adding candidature:', saveError);
             res.status(400).json({ success: false, error: 'Failed to add candidature' });
           }
         });
+        
         break;
       
       case 'PUT':
