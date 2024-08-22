@@ -8,6 +8,7 @@ import { CSVLink } from 'react-csv';
  import { useRouter } from 'next/router'; 
  import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import Loader from '@/components/Loader';
 export default function Recrutement() {
   const [languages, setLanguages] = useState([]);
   const [candidatures, setCandidatures] = useState([]);
@@ -312,7 +313,10 @@ export default function Recrutement() {
         <div>
           <button onClick={() => { setShowModal(true); setEditCandidature(null); }}>Add Candidature</button>
           <Modal show={showModal} onClose={() => setShowModal(false)}>
-            <h2>{editCandidature ? 'Edit Candidature' : 'Add Candidature'}</h2>
+            {
+              isSubmitting ? <Loader /> : 
+              <>
+              <h2>{editCandidature ? 'Edit Candidature' : 'Add Candidature'}</h2>
             <form onSubmit={handleSubmit}>
               <input type="text" name="candidateName" placeholder="Candidate Name" onChange={handleChange} value={formData.candidateName} required />
               <input type="text" name="phone" placeholder="Phone" onChange={handleChange} value={formData.phone} required />
@@ -354,7 +358,9 @@ export default function Recrutement() {
                 />
               </div>
               <button type="submit" disabled={isSubmitting}>Submit</button>
-            </form>
+            </form></>
+            }
+            
           </Modal>
         </div>
 </div>

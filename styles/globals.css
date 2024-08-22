@@ -383,7 +383,8 @@ button:focus {
   max-height: 80vh; /* Limit the maximum height of the modal to 80% of the viewport height */
   overflow-y: auto; /* Enable vertical scrolling when content exceeds max height */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow for better visibility */
-  border-radius: 8px; /* Optional: Rounded corners */
+  border-radius: 8px;
+  min-height: 400px; 
 }
 
 .modalContent input, .modalContent select {
