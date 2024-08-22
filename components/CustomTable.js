@@ -21,9 +21,13 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState('view'); 
   const [isSubmitting, setIsSubmitting] = useState(false); // Track if submit button is clicked
-
+  const isEpochDate = (date) => {
+    return date && new Date(date).getTime() === 0;
+  };
+  
   // Handle modal open
   const handleModalOpen = (candidature, mode) => {
+    console.log("Language in candidature: ", candidature.language);
     setEditingData({
       _id: candidature._id,
       candidateName: candidature.candidateName || '',
@@ -123,38 +127,48 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
           </tr>
         </thead>
         <tbody>
-          {data.map((row) => (
-            <tr key={row._id}>
-              {columns.map(column => (
-                    <td key={column.accessor}>
-                      {column.accessor === 'clientToAssign' ? (
-                        row[column.accessor]
-                      ) : column.accessor === 'interviewDateTime' ? (
-                        new Date(row[column.accessor]).toLocaleString()
-                      ) : column.accessor === 'fileUrl' ? (
-                        <a href={row[column.accessor]} target="_blank" rel="noopener noreferrer">
-                          View CV
-                        </a>
-                      ) : column.accessor === 'clientDecision' ? (
-                        <span
-                          style={{ cursor: 'pointer', color: 'blue' }}
-                          onClick={() => handleModalOpen(row, 'edit')}
-                        >
-                          {row[column.accessor]}
-                        </span>
-                      ) : (
-                        row[column.accessor]
-                      )}
-                    </td>
-                  ))}
-
-              <td>
-                <button onClick={() => handleModalOpen(row, 'view')}>View</button>
-                <button onClick={() => handleModalOpen(row, 'edit')}>Edit</button>
-                <button onClick={() => handleDelete(row._id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
+        {data.map((row) => {
+    
+    const isEpoch = row.interviewDateTime == null
+    return (
+      <tr
+        key={row._id}
+        style={{
+          backgroundColor: isEpoch ? 'yellow' : 'transparent'
+        }}
+      >
+        {columns.map(column => (
+          <td key={column.accessor}>
+            {column.accessor === 'interviewDateTime' ? (
+              isEpoch ? (
+                '---'
+              ) : (
+                new Date(row[column.accessor]).toLocaleString()
+              )
+            ) : column.accessor === 'fileUrl' ? (
+              <a href={row[column.accessor]} target="_blank" rel="noopener noreferrer">
+                View CV
+              </a>
+            ) : column.accessor === 'clientDecision' ? (
+              <span
+                style={{ cursor: 'pointer', color: 'blue' }}
+                onClick={() => handleModalOpen(row, 'edit')}
+              >
+                {row[column.accessor]}
+              </span>
+            ) : (
+              row[column.accessor]
+            )}
+          </td>
+        ))}
+        <td>
+          <button onClick={() => handleModalOpen(row, 'view')}>View</button>
+          <button onClick={() => handleModalOpen(row, 'edit')}>Edit</button>
+          <button onClick={() => handleDelete(row._id)}>Delete</button>
+        </td>
+      </tr>
+    );
+  })}
         </tbody>
       </table>
 
@@ -166,7 +180,38 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
       >
         <h2>{modalMode === 'edit' ? 'Edit Candidature' : 'View Candidature'}</h2>
         <form onSubmit={(e) => { e.preventDefault(); modalMode === 'edit' && handleSaveClick(); }}>
-          {/* Other form fields */}
+          
+
+        <input
+              type="text"
+              name="candidateName"
+              placeholder="Candidate Name"
+              onChange={handleInputChange}
+              value={editingData.candidateName || ''}
+              required
+              disabled={modalMode === 'view'}
+            />
+            <input
+              type="text"
+              name="phone"
+              placeholder="Phone"
+              onChange={handleInputChange}
+              value={editingData.phone || ''}
+              required
+              disabled={modalMode === 'view'}
+            />
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              onChange={handleInputChange}
+              value={editingData.email || ''}
+              required
+              disabled={modalMode === 'view'}
+            />
+          
+
+
           <select
             name="language"
             multiple
@@ -179,6 +224,20 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
               <option key={lang._id} value={lang.language}>{lang.language}</option>
             ))}
           </select>
+
+          
+            <select
+              name="clientToAssign"
+              onChange={handleInputChange}
+              value={editingData.clientToAssign || ''}
+              required
+              disabled={modalMode === 'view'}
+            >
+              <option value="">Select Client to Assign</option>
+              {clients.map(client => (
+                <option key={client._id} value={client._id}>{client.client}</option>
+              ))}
+            </select>
           {/* Conditional interviewDateTime field based on client */}
           {editingData.clientToAssign !== 'Other' && (
             <DatePicker
@@ -189,7 +248,7 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
               timeIntervals={30}
               dateFormat="yyyy-MM-dd HH:mm"
               name="interviewDateTime"
-              required
+              placeholderText='Interview Time'
               disabled={modalMode === 'view'}
             />
           )}

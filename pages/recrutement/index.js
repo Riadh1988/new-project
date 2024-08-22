@@ -342,7 +342,7 @@ export default function Recrutement() {
                 timeIntervals={30} // 30-minute interval
                 dateFormat="yyyy-MM-dd HH:mm"
                 name="interviewDateTime"
-                required
+                placeholderText='Interview Time' 
         />
         <div>
                 <label htmlFor="fileUrl">Screenshot:</label>

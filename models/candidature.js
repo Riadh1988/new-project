@@ -6,7 +6,7 @@ const candidatureSchema = new Schema({
   email: { type: String, required: true }, 
   language: [{ type: String, required: true }], // Add language field
   clientToAssign: { type: Schema.Types.ObjectId, ref: 'Client', required: true },
-  interviewDateTime: { type: Date, required: true },
+  interviewDateTime: { type: Date},
   clientDecision: { type: String, enum: ['Accepted', 'Declined', 'Pending'], default: 'Pending' },
   declineReason: { type: String },
   declineComment: { type: String },  
