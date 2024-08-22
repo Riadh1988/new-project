@@ -109,10 +109,12 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = url.split('/').pop(); // Use the filename from the URL
+        a.download = url.split('/').pop(); 
+
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+        console.log(url)
       })
       .catch(error => console.error('Error downloading file:', error));
   };
@@ -151,29 +153,39 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
         }}
       >
         {columns.map(column => (
-          <td key={column.accessor}>
-            {column.accessor === 'interviewDateTime' ? (
-              isEpoch ? (
-                '---'
-              ) : (
-                new Date(row[column.accessor]).toLocaleString()
-              )
-            ) : column.accessor === 'fileUrl' ? (
-              <a onClick={() => handleDownload(row[column.accessor])}>
-               Download CV
-              </a>
-            ) : column.accessor === 'clientDecision' ? (
-              <span
-                style={{ cursor: 'pointer', color: 'blue' }}
-                onClick={() => handleModalOpen(row, 'edit')}
-              >
-                {row[column.accessor]}
-              </span>
-            ) : (
-              row[column.accessor]
-            )}
-          </td>
-        ))}
+  <td key={column.accessor}>
+    {column.accessor === 'interviewDateTime' ? (
+      isEpoch ? (
+        '---'
+      ) : (
+        new Date(row[column.accessor]).toLocaleString()
+      )
+    ) : column.accessor === 'fileUrl' ? (
+      <a onClick={() => handleDownload(row[column.accessor])} style={{ cursor: 'pointer', color: 'blue' }}>
+        Download CV
+      </a>
+    ) : column.accessor === 'language' ? (
+      row[column.accessor] && Array.isArray(row[column.accessor]) ? (
+        row[column.accessor].map((language, index) => (
+          <span key={index} className="lnsp">
+            {language}
+          </span>
+        ))
+      ) : (
+        <span>{row[column.accessor]}</span>
+      )
+    ) : column.accessor === 'clientDecision' ? (
+      <span
+        style={{ cursor: 'pointer', color: 'blue' }}
+        onClick={() => handleModalOpen(row, 'edit')}
+      >
+        {row[column.accessor]}
+      </span>
+    ) : (
+      row[column.accessor]
+    )}
+  </td>
+))}
         <td>
           <button onClick={() => handleModalOpen(row, 'view')}>View</button>
           <button onClick={() => handleModalOpen(row, 'edit')}>Edit</button>
@@ -265,6 +277,54 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
               disabled={modalMode === 'view'}
             />
           )}
+          <select
+              name="clientDecision"
+              onChange={handleClientDecisionChange}
+              value={editingData.clientDecision || ''}
+              required
+              disabled={modalMode === 'view'}
+            >
+              <option value="Pending">Pending</option>
+              <option value="Accepted">Accepted</option>
+              <option value="Refused">Refused</option>
+              <option value="Missed Interview">Missed Interview</option>
+            </select>
+            {editingData.clientDecision === 'Refused' && (
+              <>
+                <select
+                  name="declineReason"
+                  onChange={handleInputChange}
+                  value={editingData.declineReason || ''}
+                  required
+                  disabled={modalMode === 'view'}
+                >
+                  <option value="">Select Decline Reason</option>
+                  <option value="No good languages">No good languages</option>
+                  <option value="Not available">Not available</option>
+                  <option value="Other">Other</option>
+                </select>
+                <textarea
+                  name="declineComment"
+                  placeholder="Decline Comment"
+                  onChange={handleInputChange}
+                  value={editingData.declineComment || ''}
+                  disabled={modalMode === 'view'}
+                />
+              </>
+            )}
+            {editingData.clientDecision === 'Missed Interview' && (
+              <DatePicker
+                selected={editingData.rescheduleDateTime}
+                onChange={(date) => handleDateChange(date, 'rescheduleDateTime')}
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={30} // 30-minute interval
+                dateFormat="yyyy-MM-dd HH:mm"
+                name="rescheduleDateTime"
+                required
+                disabled={modalMode === 'view'}
+              />
+            )}
           {modalMode === 'edit' && <button type="submit" disabled={isSubmitting}>Save</button>}
         </form>
       </Modal>

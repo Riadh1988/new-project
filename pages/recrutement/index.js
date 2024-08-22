@@ -249,7 +249,7 @@ export default function Recrutement() {
 
   const prepareDataForExport = (data) => {
     return data.map(item => ({
-      _id: item._id || '--',
+       
       candidateName: item.candidateName || '--',
       phone: item.phone || '--',
       email: item.email || '--',

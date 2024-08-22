@@ -1075,6 +1075,12 @@ display: block;
   border: 1px solid #ccc; 
   padding: 8px;
 }
+
+.lnsp{
+  color: black;
+    text-decoration: none;
+    padding-right: 5px;
+}
 .addit-mod .modalContent{
   min-width: 780px;
   min-height: 400px;
