@@ -577,8 +577,9 @@ p {
   align-items: center;
   height: 60vh;
   gap: 20px;
-  max-width: 800px; /* Adjust width to control the line breaking */
-  margin: 0 auto; /* Center the grid container */
+  max-width: 800px;  
+  margin: 0 auto; 
+  width: 100%;
 }
 
 .modal-group span{
