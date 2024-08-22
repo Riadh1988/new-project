@@ -102,7 +102,20 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
   const handleDateChange = (date, name) => {
     setEditingData(prev => ({ ...prev, [name]: date }));
   };
-
+  const handleDownload = (url) => {
+    fetch(url)
+      .then(response => response.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = url.split('/').pop(); // Use the filename from the URL
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      })
+      .catch(error => console.error('Error downloading file:', error));
+  };
   // Handle select change for clientDecision
   const handleClientDecisionChange = (e) => {
     const value = e.target.value;
@@ -146,8 +159,8 @@ const CustomTable = ({ columns, data, clients, handleUpdate, handleDelete, langu
                 new Date(row[column.accessor]).toLocaleString()
               )
             ) : column.accessor === 'fileUrl' ? (
-              <a href={row[column.accessor]} target="_blank" rel="noopener noreferrer">
-                View CV
+              <a onClick={() => handleDownload(row[column.accessor])}>
+               Download CV
               </a>
             ) : column.accessor === 'clientDecision' ? (
               <span
