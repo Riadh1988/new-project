@@ -80,7 +80,7 @@ const AttendancePage = () => {
     }
   }, []);
   
-  
+  console.log(attendance)
   useEffect(() => {
     if (currentWeekStart) {
       fetchAttendance(currentWeekStart);
