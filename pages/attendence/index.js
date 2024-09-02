@@ -82,10 +82,8 @@ const AttendancePage = () => {
   
   
   useEffect(() => {
-    if (currentWeekStart && !isNaN(new Date(currentWeekStart).getTime())) {
+    if (currentWeekStart) {
       fetchAttendance(currentWeekStart);
-    } else {
-      console.error('Invalid currentWeekStart:', currentWeekStart);
     }
   }, [currentWeekStart, fetchAttendance]);
 
@@ -121,7 +119,7 @@ const createAgent = useCallback(async () => {
     };
     await axios.post('/api/attendance', agentData);
     fetchAgentsAndClients();
-    setModalNew(false);
+    setModalnew(false);
     setNewAgentWfh(false);
     setNewAgentClient('');
     setNewAgentPosition('');
