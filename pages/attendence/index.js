@@ -7,6 +7,7 @@ import Layout from '@/components/Layout';
 import axios from 'axios';
 import Loader from '@/components/Loader';
 const LazyTable = React.lazy(() => import('@/components/LazyTable'));
+
  
 
 const generateWeekDays = (startDate) => {
@@ -463,6 +464,7 @@ const isCurrentWeek = (date) => {
   const endOfWeekDate = endOfWeek(new Date(), { weekStartsOn: 1 });
   return date >= startOfWeekDate && date <= endOfWeekDate;
 };
+console.log('Rendering LazyTable with data:', { filteredAgents, weekDays, attendance });
 return (
   <Layout>
     <button onClick={() => setModalnew(true)}>Create new agent</button>
@@ -494,17 +496,18 @@ return (
     
    
         <Suspense fallback={<Loader />}>
-        <LazyTable
-          filteredAgents={filteredAgents}
-          weekDays={weekDays}
-          attendance={attendance}
-          handleCellClick={handleCellClick}
-          handleAgentNameClick={handleAgentNameClick}
-          toggleAgentSelection={toggleAgentSelection}
-          selectedAgents={selectedAgents}
-          Loading={Loading}
-        />
-      </Suspense>
+  <LazyTable
+    filteredAgents={agents.slice(0, 5)} // just a few agents for testing
+    weekDays={weekDays}
+    attendance={attendance} // test with empty attendance
+    handleCellClick={() => {}}
+    handleAgentNameClick={() => {}}
+    toggleAgentSelection={() => {}}
+    selectedAgents={[]}
+    Loading={Loading}
+  />
+</Suspense>
+
     
     <Modal show={showAgentModal}  addition='addit-mod'>
       {
