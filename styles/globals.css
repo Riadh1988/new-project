@@ -1232,3 +1232,34 @@ display: block;
 .fromto .l, .fromto .r{
   width: 50%;
 }
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr); /* Adjust the number based on the number of columns */
+  gap: 10px;
+}
+
+.grid-header {
+  display: contents; /* Use contents to retain the grid's structure */
+}
+
+.grid-body {
+  display: contents; /* Use contents to retain the grid's structure */
+}
+
+.grid-row {
+  display: contents; /* Use contents to retain the grid's structure */
+}
+
+.grid-cell {
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+
+.cell-border {
+  border: 1px solid #ccc;
+}
+
+.loader {
+  grid-column: span 8; /* Span all columns in the grid */
+  text-align: center;
+}
