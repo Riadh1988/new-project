@@ -51,34 +51,50 @@ const AttendancePage = () => {
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [extraHours, setExtraHours] = useState(0);
   const weekDays = useMemo(() => getFormattedWeekDays(currentWeekStart), [currentWeekStart]);
+  const [currentPage, setCurrentPage] = useState(1);
+const agentsPerPage = 20;
 
+const totalPages = Math.ceil(agents.length / agentsPerPage);
+const filteredAgents = useMemo(() => {
+  // Apply filters, search terms, etc.
+  const filtered = agents.filter(agent => 
+    agent.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    (selectedClient === '' || agent.client === selectedClient)
+  );
 
-  const fetchAttendance = useCallback(async (weekStart) => {
-    try {
-      if (!weekStart || isNaN(new Date(weekStart).getTime())) {
-        console.error('Invalid weekStart:', weekStart);
-        return;
-      }
-      setLoading(true);
-      const { data } = await axios.get(`/api/attendance/w/${weekStart.toISOString()}`);
-      const attendanceData = data.reduce((acc, record) => {
-        if (!acc[record.agentId._id]) {
-          acc[record.agentId._id] = [];
-        }
-        acc[record.agentId._id].push({
-          date: format(new Date(record.date), 'yyyy-MM-dd'),
-          status: record.status,
-          extraHours: record.extraHours,
-        });
-        return acc;
-      }, {});
-      setAttendance(attendanceData);
-    } catch (error) {
-      console.error('Error fetching attendance:', error);
-    } finally {
-      setLoading(false);
+  // Get the agents to display based on the current page
+  const indexOfLastAgent = currentPage * agentsPerPage;
+  const indexOfFirstAgent = indexOfLastAgent - agentsPerPage;
+  return filtered.slice(indexOfFirstAgent, indexOfLastAgent);
+}, [agents, searchTerm, selectedClient, currentPage]);
+const fetchAttendance = useCallback(async (weekStart) => {
+  try {
+    if (!weekStart || isNaN(new Date(weekStart).getTime())) {
+      console.error('Invalid weekStart:', weekStart);
+      return;
     }
-  }, []);
+    setLoading(true);
+    const { data } = await axios.get(`/api/attendance/w/${weekStart.toISOString()}`);
+    const attendanceData = data.reduce((acc, record) => {
+      if (!acc[record.agentId._id]) {
+        acc[record.agentId._id] = [];
+      }
+      acc[record.agentId._id].push({
+        date: format(new Date(record.date), 'yyyy-MM-dd'),
+        status: record.status,
+        extraHours: record.extraHours,
+      });
+      return acc;
+    }, {});
+    setAttendance(attendanceData);
+    console.log(attendanceData)
+  } catch (error) {
+    console.error('Error fetching attendance:', error);
+  } finally {
+    setLoading(false);
+  }
+}, []);
+
   
   
   useEffect(() => {
@@ -87,7 +103,7 @@ const AttendancePage = () => {
     } else {
       console.error('Invalid currentWeekStart:', currentWeekStart);
     }
-  }, [currentWeekStart, fetchAttendance]);
+  }, [currentWeekStart,filteredAgents, fetchAttendance]);
 
  const fetchAgentsAndClients = useCallback(async () => {
   try {
@@ -451,12 +467,7 @@ const handleRemoveAgent = (agentId) => {
   setSelectedAgents(prevSelectedAgents => prevSelectedAgents.filter(agent => agent._id !== agentId));
 };
 
-const filteredAgents = agents.filter(agent => {
-  return (
-    (agent.name.toLowerCase().includes(searchTerm.toLowerCase())) &&
-    (selectedClient === '' || agent.client === selectedClient)
-  );
-}); 
+
 
 const isCurrentWeek = (date) => {
   const startOfWeekDate = startOfWeek(new Date(), { weekStartsOn: 1 });
@@ -544,6 +555,15 @@ return (
         ))}
       </tbody>
     </table>
+    <div className="pagination-controls">
+      <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
+        Previous
+      </button>
+      <span>Page {currentPage} of {totalPages}</span>
+      <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
+        Next
+      </button>
+    </div>
     
     <Modal show={showAgentModal}  addition='addit-mod'>
       {
