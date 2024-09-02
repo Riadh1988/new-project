@@ -59,8 +59,11 @@ const AttendancePage = () => {
         console.error('Invalid weekStart:', weekStart);
         return;
       }
+      console.log('Fetching attendance for week starting on:', weekStart);
       setLoading(true);
       const { data } = await axios.get(`/api/attendance/w/${weekStart.toISOString()}`);
+      console.log('Fetched attendance data:', data);
+
       const attendanceData = data.reduce((acc, record) => {
         if (!acc[record.agentId._id]) {
           acc[record.agentId._id] = [];
@@ -72,6 +75,8 @@ const AttendancePage = () => {
         });
         return acc;
       }, {});
+
+      console.log('Processed attendance data:', attendanceData);
       setAttendance(attendanceData);
     } catch (error) {
       console.error('Error fetching attendance:', error);
@@ -79,26 +84,34 @@ const AttendancePage = () => {
       setLoading(false);
     }
   }, []);
-   
+
   useEffect(() => {
     if (currentWeekStart) {
       fetchAttendance(currentWeekStart);
     }
   }, [currentWeekStart, fetchAttendance]);
 
- const fetchAgentsAndClients = useCallback(async () => {
-  try {
-    const [agentsResponse, clientsResponse] = await Promise.all([
-      fetch('/api/attendance').then((res) => res.json()),
-      axios.get('/api/clients')
-    ]);
-    setAgents(Array.isArray(agentsResponse.data) ? agentsResponse.data : []);
-    setClients(clientsResponse.data);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
-}, []);
+  const fetchAgentsAndClients = useCallback(async () => {
+    try {
+      console.log('Fetching agents and clients');
+      const [agentsResponse, clientsResponse] = await Promise.all([
+        fetch('/api/attendance').then((res) => res.json()),
+        axios.get('/api/clients')
+      ]);
 
+      console.log('Fetched agents:', agentsResponse.data);
+      console.log('Fetched clients:', clientsResponse.data);
+
+      setAgents(Array.isArray(agentsResponse.data) ? agentsResponse.data : []);
+      setClients(clientsResponse.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAgentsAndClients();
+  }, [fetchAgentsAndClients]);
 useEffect(() => {
   fetchAgentsAndClients();
 }, [fetchAgentsAndClients]);
@@ -490,7 +503,7 @@ return (
         </div>
     
    
-        <div className="grid-container">
+    <div className="grid-container">
   <div className="grid-header">
     <div>
       <input 
