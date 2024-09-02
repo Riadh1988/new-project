@@ -1,12 +1,11 @@
-import React, { useState, useEffect,useMemo, useCallback, Suspense, startTransition  } from 'react';
-import Modal from '@/components/Modal';  
+import React, { useState, useEffect,useMemo, useCallback } from 'react';
+import Modal from '@/components/Modal'; // Adjust the import path if necessary
 import { format, addDays, startOfWeek, subWeeks, addWeeks, isSunday,startOfMonth, endOfMonth, endOfWeek } from 'date-fns'; 
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Layout from '@/components/Layout';
 import axios from 'axios';
 import Loader from '@/components/Loader';
-const LazyTable = React.lazy(() => import('@/components/LazyTable'));
 
  
 
@@ -73,15 +72,15 @@ const AttendancePage = () => {
         });
         return acc;
       }, {});
-      startTransition(() => {
-        setAttendance(attendanceData);
-      });
+      setAttendance(attendanceData);
     } catch (error) {
       console.error('Error fetching attendance:', error);
     } finally {
       setLoading(false);
     }
   }, []);
+  
+  console.log(attendance)
   useEffect(() => {
     if (currentWeekStart) {
       fetchAttendance(currentWeekStart);
@@ -236,9 +235,7 @@ const createAgent = useCallback(async () => {
         }
       });
   
-      startTransition(() => {
-        setAgentReport(report);
-      });
+      setAgentReport(report);
   
     } catch (error) {
       console.error('Error fetching monthly report:', error);
@@ -464,7 +461,6 @@ const isCurrentWeek = (date) => {
   const endOfWeekDate = endOfWeek(new Date(), { weekStartsOn: 1 });
   return date >= startOfWeekDate && date <= endOfWeekDate;
 };
-console.log('Rendering LazyTable with data:', { filteredAgents, weekDays, attendance });
 return (
   <Layout>
     <button onClick={() => setModalnew(true)}>Create new agent</button>
@@ -495,19 +491,70 @@ return (
         </div>
     
    
-        <Suspense fallback={<Loader />}>
-  <LazyTable
-    filteredAgents={agents.slice(0, 5)} // just a few agents for testing
-    weekDays={weekDays}
-    attendance={attendance} // test with empty attendance
-    handleCellClick={() => {}}
-    handleAgentNameClick={() => {}}
-    toggleAgentSelection={() => {}}
-    selectedAgents={[]}
-    Loading={Loading}
-  />
-</Suspense>
+    <table>
+      <thead>
+        <tr>
+          <th>
+          <input 
+        type="checkbox" 
+        onChange={handleSelectAllAgents} 
+        checked={selectedAgents.length === filteredAgents.length && filteredAgents.length > 0} 
+      />
+          </th>
+          <th>Agent</th>
+          {weekDays.map(({ dayName, formattedDate }) => (
+            <th key={dayName}>{`${dayName} (${formattedDate})`}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {
+        Loading ? (
+            <tr>
+              <td colSpan={weekDays.length + 2}>
+                <Loader />
+              </td>
+            </tr>
+          ) :
+        filteredAgents.map((agent) => (
+          <tr key={agent._id}>
+            <td className="cell-border">
+              <input 
+                type="checkbox" 
+                checked={selectedAgents.includes(agent)}
+                onChange={() => toggleAgentSelection(agent)}
+              />
+            </td>
+            <td className="cell-border" onClick={() => handleAgentNameClick(agent)} style={{ cursor: 'pointer', textDecoration: 'underline' }}>
+              {agent.name}
+            </td>
 
+            {
+            
+            weekDays.map(({ date }, index) => {
+              const entry = attendance[agent._id]?.find(entry => entry.date === date);
+              const currentStatus = entry?.status || 'N/A';
+              const extraHours = entry?.extraHours || 0; 
+        
+              return (
+                <td
+                  key={index}
+                  style={{ backgroundColor: getStatusColor(currentStatus), cursor: 'pointer' }}
+                  onClick={() => handleCellClick(agent, index, currentStatus,extraHours )}
+                  className="cell-border"
+                >
+                  {getStatusText(currentStatus)} <br/>
+                  {extraHours > 0 && <span>Extra Hours: {extraHours}</span>}
+                </td>
+              );
+            })
+             
+            }
+          </tr>
+        ))
+        }
+      </tbody>
+    </table>
     
     <Modal show={showAgentModal}  addition='addit-mod'>
       {
@@ -789,7 +836,50 @@ return (
 );
 };
 
- 
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'present-of':
+      return '#4CAF50';  
+    case 'present-wfh':
+      return '#8BC34A';  
+    case 'absent':
+      return '#FFEB3B';  
+    case 'sickleave':
+      return '#FF9800';  
+    case 'vacation':
+      return '#2196F3';  
+    case 'holiday':
+      return '#9C27B0';  
+    case 'day-off':
+      return 'red';  
+    case 'work-holiday':
+      return '#FF5722';  
+    default:
+      return '#FFFFFF';  
+  }
+};
+const getStatusText = (status) => {
+  switch (status) {
+    case 'present-of':
+      return 'Present In Office';
+    case 'present-wfh':
+      return 'Present From Home';
+    case 'absent':
+      return 'Absent';
+    case 'sickleave':
+      return 'Sick Leave'; 
+    case 'vacation':
+      return 'Vacation';
+    case 'holiday':
+      return 'Holiday';
+    case 'day-off':
+      return 'Day Off';
+    case 'work-holiday':
+      return 'Work on Holiday';
+    default:
+      return '  -------  ';
+  }
+};
 
 
 export default AttendancePage;
