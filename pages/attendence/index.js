@@ -82,12 +82,8 @@ const AttendancePage = () => {
   
   
   useEffect(() => {
-    if (currentWeekStart && !isNaN(new Date(currentWeekStart).getTime())) {
-      fetchAttendance(currentWeekStart);
-    } else {
-      console.error('Invalid currentWeekStart:', currentWeekStart);
-    }
-  }, [currentWeekStart]);
+    fetchAttendance(currentWeekStart);
+  }, [currentWeekStart]); 
   useEffect(() => {
     async function fetchData() {
       try {
