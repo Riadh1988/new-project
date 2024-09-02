@@ -1,12 +1,12 @@
-import React, { useState, useEffect,useMemo, useCallback } from 'react';
-import Modal from '@/components/Modal'; // Adjust the import path if necessary
+import React, { useState, useEffect,useMemo, useCallback, Suspense  } from 'react';
+import Modal from '@/components/Modal';  
 import { format, addDays, startOfWeek, subWeeks, addWeeks, isSunday,startOfMonth, endOfMonth, endOfWeek } from 'date-fns'; 
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Layout from '@/components/Layout';
 import axios from 'axios';
 import Loader from '@/components/Loader';
-
+const LazyTable = React.lazy(() => import('@/components/LazyTable'));
  
 
 const generateWeekDays = (startDate) => {
@@ -491,73 +491,18 @@ return (
         </div>
     
    
-    <table>
-      <thead>
-        <tr>
-          <th>
-          <input 
-        type="checkbox" 
-        onChange={handleSelectAllAgents} 
-        checked={selectedAgents.length === filteredAgents.length && filteredAgents.length > 0} 
-      />
-          </th>
-          <th>Agent</th>
-          {weekDays.map(({ dayName, formattedDate }) => (
-            <th key={dayName}>{`${dayName} (${formattedDate})`}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-       
-        {
-        Loading ? (
-          <tr>
-            <td colSpan={weekDays.length + 2}>
-              <Loader />
-            </td>
-          </tr>
-        ) :
-        filteredAgents.map((agent) => (
-          <tr key={agent._id}>
-            <td className="cell-border">
-              <input 
-                type="checkbox" 
-                checked={selectedAgents.includes(agent)}
-                onChange={() => toggleAgentSelection(agent)}
-              />
-            </td>
-            <td className="cell-border" onClick={() => handleAgentNameClick(agent)} style={{ cursor: 'pointer', textDecoration: 'underline' }}>
-              {agent.name}
-            </td>
-
-            {
-            
-            weekDays.map(({ date }, index) => {
-              const entry = attendance[agent._id]?.find(entry => entry.date === date);
-              const currentStatus = entry?.status || 'N/A';
-              const extraHours = entry?.extraHours || 0; 
-        
-              return (
-                <td
-                  key={index}
-                  style={{ backgroundColor: getStatusColor(currentStatus), cursor: 'pointer' }}
-                  onClick={() => handleCellClick(agent, index, currentStatus,extraHours )}
-                  className="cell-border"
-                >
-                  {getStatusText(currentStatus)} <br/>
-                  {extraHours > 0 && <span>Extra Hours: {extraHours}</span>}
-                </td>
-              );
-            })
-             
-            }
-          </tr>
-        ))
-        
-        }
-
-      </tbody>
-    </table>
+        <Suspense fallback={<Loader />}>
+        <LazyTable
+          filteredAgents={filteredAgents}
+          weekDays={weekDays}
+          attendance={attendance}
+          handleCellClick={handleCellClick}
+          handleAgentNameClick={handleAgentNameClick}
+          toggleAgentSelection={toggleAgentSelection}
+          selectedAgents={selectedAgents}
+          Loading={Loading}
+        />
+      </Suspense>
     
     <Modal show={showAgentModal}  addition='addit-mod'>
       {
