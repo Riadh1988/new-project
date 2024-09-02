@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useMemo, useCallback, Suspense  } from 'react';
+import React, { useState, useEffect,useMemo, useCallback, Suspense, startTransition  } from 'react';
 import Modal from '@/components/Modal';  
 import { format, addDays, startOfWeek, subWeeks, addWeeks, isSunday,startOfMonth, endOfMonth, endOfWeek } from 'date-fns'; 
 import DatePicker from 'react-datepicker';
@@ -72,15 +72,15 @@ const AttendancePage = () => {
         });
         return acc;
       }, {});
-      setAttendance(attendanceData);
+      startTransition(() => {
+        setAttendance(attendanceData);
+      });
     } catch (error) {
       console.error('Error fetching attendance:', error);
     } finally {
       setLoading(false);
     }
   }, []);
-  
-  console.log(attendance)
   useEffect(() => {
     if (currentWeekStart) {
       fetchAttendance(currentWeekStart);
@@ -235,7 +235,9 @@ const createAgent = useCallback(async () => {
         }
       });
   
-      setAgentReport(report);
+      startTransition(() => {
+        setAgentReport(report);
+      });
   
     } catch (error) {
       console.error('Error fetching monthly report:', error);
@@ -784,50 +786,7 @@ return (
 );
 };
 
-const getStatusColor = (status) => {
-  switch (status) {
-    case 'present-of':
-      return '#4CAF50';  
-    case 'present-wfh':
-      return '#8BC34A';  
-    case 'absent':
-      return '#FFEB3B';  
-    case 'sickleave':
-      return '#FF9800';  
-    case 'vacation':
-      return '#2196F3';  
-    case 'holiday':
-      return '#9C27B0';  
-    case 'day-off':
-      return 'red';  
-    case 'work-holiday':
-      return '#FF5722';  
-    default:
-      return '#FFFFFF';  
-  }
-};
-const getStatusText = (status) => {
-  switch (status) {
-    case 'present-of':
-      return 'Present In Office';
-    case 'present-wfh':
-      return 'Present From Home';
-    case 'absent':
-      return 'Absent';
-    case 'sickleave':
-      return 'Sick Leave'; 
-    case 'vacation':
-      return 'Vacation';
-    case 'holiday':
-      return 'Holiday';
-    case 'day-off':
-      return 'Day Off';
-    case 'work-holiday':
-      return 'Work on Holiday';
-    default:
-      return '  -------  ';
-  }
-};
+ 
 
 
 export default AttendancePage;
