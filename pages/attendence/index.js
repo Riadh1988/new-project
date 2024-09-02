@@ -50,10 +50,15 @@ const AttendancePage = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [extraHours, setExtraHours] = useState(0);
-   
+  
 
   const fetchAttendance = async (weekStart) => {
     try {
+      if (!weekStart || isNaN(new Date(weekStart).getTime())) {
+        console.error('Invalid weekStart:', weekStart);
+        return;
+      }
+  
       setLoading(true);
       const { data } = await axios.get(`/api/attendance/w/${weekStart.toISOString()}`);
       const attendanceData = data.reduce((acc, record) => {
@@ -68,15 +73,21 @@ const AttendancePage = () => {
         return acc;
       }, {});
       setAttendance(attendanceData);
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching attendance:', error);
+    } finally {
+      setLoading(false);
     }
   };
   
+  
   useEffect(() => {
-    fetchAttendance(currentWeekStart);
-  }, [currentWeekStart]); 
+    if (currentWeekStart && !isNaN(new Date(currentWeekStart).getTime())) {
+      fetchAttendance(currentWeekStart);
+    } else {
+      console.error('Invalid currentWeekStart:', currentWeekStart);
+    }
+  }, [currentWeekStart]);
   useEffect(() => {
     async function fetchData() {
       try {
@@ -154,12 +165,14 @@ const AttendancePage = () => {
   
   const weekDays = getFormattedWeekDays(currentWeekStart);
 
-  const handleCellClick = (agent, dayIndex, currentStatus) => {
+  const handleCellClick = (agent, dayIndex, currentStatus, extraHours) => {
     setSelectedCells([{ agent, dayIndex }]);
     setSelectedAgent(agent);
     setStatus(currentStatus);
     setShowModal(true);
+    setExtraHours(extraHours);
   };
+  
 
   const handleStatusChange = (e) => {
     setStatus(e.target.value);
@@ -458,6 +471,15 @@ const toggleAgentSelection = (agent) => {
       : [...prev, agent]
   );
 };
+const handleSelectAllAgents = () => {
+  if (selectedAgents.length === filteredAgents.length) {
+    // If all agents are selected, unselect all
+    setSelectedAgents([]);
+  } else {
+    // Otherwise, select all filtered agents
+    setSelectedAgents(filteredAgents);
+  }
+};
 
 const handleRemoveAgent = (agentId) => {
   setSelectedAgents(prevSelectedAgents => prevSelectedAgents.filter(agent => agent._id !== agentId));
@@ -508,7 +530,13 @@ return (
     <table>
       <thead>
         <tr>
-          <th>Select</th>
+          <th>
+          <input 
+        type="checkbox" 
+        onChange={handleSelectAllAgents} 
+        checked={selectedAgents.length === filteredAgents.length && filteredAgents.length > 0} 
+      />
+          </th>
           <th>Agent</th>
           {weekDays.map(({ dayName, formattedDate }) => (
             <th key={dayName}>{`${dayName} (${formattedDate})`}</th>
@@ -538,7 +566,7 @@ return (
                 <td
                   key={index}
                   style={{ backgroundColor: getStatusColor(currentStatus), cursor: 'pointer' }}
-                  onClick={() => handleCellClick(agent, index, currentStatus)}
+                  onClick={() => handleCellClick(agent, index, currentStatus,extraHours )}
                   className="cell-border"
                 >
                   {getStatusText(currentStatus)} <br/>
@@ -550,6 +578,7 @@ return (
         ))}
       </tbody>
     </table>
+    
     <Modal show={showAgentModal}  addition='addit-mod'>
       {
         Loading ? <Loader /> :
