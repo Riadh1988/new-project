@@ -524,7 +524,7 @@ return (
             </td>
 
             {
-            attendance ? 
+            Loading ? <Loader /> :
             weekDays.map(({ date }, index) => {
               const entry = attendance[agent._id]?.find(entry => entry.date === date);
               const currentStatus = entry?.status || 'N/A';
@@ -542,7 +542,7 @@ return (
                 </td>
               );
             })
-            : <Loader />
+             
             }
           </tr>
         ))}
