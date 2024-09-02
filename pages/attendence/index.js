@@ -508,7 +508,16 @@ return (
         </tr>
       </thead>
       <tbody>
-        {filteredAgents.map((agent) => (
+       
+        {
+        Loading ? (
+          <tr>
+            <td colSpan={weekDays.length + 2}>
+              <Loader />
+            </td>
+          </tr>
+        ) :
+        filteredAgents.map((agent) => (
           <tr key={agent._id}>
             <td className="cell-border">
               <input 
@@ -522,7 +531,7 @@ return (
             </td>
 
             {
-            Loading ? <Loader /> :
+            
             weekDays.map(({ date }, index) => {
               const entry = attendance[agent._id]?.find(entry => entry.date === date);
               const currentStatus = entry?.status || 'N/A';
@@ -543,7 +552,10 @@ return (
              
             }
           </tr>
-        ))}
+        ))
+        
+        }
+
       </tbody>
     </table>
     
