@@ -38,6 +38,35 @@
   --card-rgb: 180, 185, 188;
   --card-border-rgb: 131, 134, 135;
 }
+.number-input{
+  padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+.topmodal {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%; min-height: 460px;
+}
+
+.topmodal > div:first-child {
+  flex-grow: 1; 
+}
+
+.bottom-modal { 
+  margin-top: auto;  
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+.bottom-modal button{
+  width: 48% !important;
+}
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -386,7 +415,9 @@ button:focus {
   border-radius: 8px;
   min-height: 400px; 
 }
-
+td{
+  text-align: center;
+}
 .modalContent input, .modalContent select {
   display: block;
   width: 100%;
@@ -478,8 +509,7 @@ button[type="submit"]:hover {
 table {
   width: 100%; /* Full width of the container */
   border-collapse: collapse; /* Remove space between table cells */
-  font-size: 16px; /* Font size */
-  min-width: 800px; /* Ensure the table has a minimum width */
+  font-size: 16px; /* Font size */ 
 }
 
 thead {
@@ -616,10 +646,12 @@ color: white;
 }
 .modal-group{
   background: #ccc;
-    padding: 5px;
-    display: flex;
+  padding: 5px;
+  display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-bottom: 15px;
+  border-radius: 5px;
 }
 .week-navigation{
   display: flex;
@@ -1085,7 +1117,7 @@ display: block;
 }
 .addit-mod .modalContent{
   min-width: 780px;
-  min-height: 400px;
+  min-height: 500px;
 }
 .message.received {
   align-self: flex-start;
@@ -1184,4 +1216,19 @@ display: block;
 }
 .sent .time-message {
   color: #e4e4e4f5;
+}
+
+.addit-mod label{
+display: block;
+}
+.react-datepicker-wrapper {
+  display: block; 
+}
+.fromto{
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+.fromto .l, .fromto .r{
+  width: 50%;
 }
