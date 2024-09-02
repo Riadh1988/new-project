@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useMemo, useCallback } from 'react';
 import Modal from '@/components/Modal'; // Adjust the import path if necessary
 import { format, addDays, startOfWeek, subWeeks, addWeeks, isSunday,startOfMonth, endOfMonth, endOfWeek } from 'date-fns'; 
 import DatePicker from 'react-datepicker';
@@ -50,15 +50,15 @@ const AttendancePage = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [extraHours, setExtraHours] = useState(0);
-  
+  const weekDays = useMemo(() => getFormattedWeekDays(currentWeekStart), [currentWeekStart]);
 
-  const fetchAttendance = async (weekStart) => {
+
+  const fetchAttendance = useCallback(async (weekStart) => {
     try {
       if (!weekStart || isNaN(new Date(weekStart).getTime())) {
         console.error('Invalid weekStart:', weekStart);
         return;
       }
-  
       setLoading(true);
       const { data } = await axios.get(`/api/attendance/w/${weekStart.toISOString()}`);
       const attendanceData = data.reduce((acc, record) => {
@@ -78,7 +78,7 @@ const AttendancePage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
   
   
   useEffect(() => {
@@ -87,83 +87,58 @@ const AttendancePage = () => {
     } else {
       console.error('Invalid currentWeekStart:', currentWeekStart);
     }
-  }, [currentWeekStart]);
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await fetch('/api/attendance');
-        const result = await response.json(); 
-        setAgents(Array.isArray(result.data) ? result.data : []);
-      } catch (error) {
-        console.error('Error fetching agents:', error);
-      }
-    }
-    async function fetchClients  ()   {
-      try {
-        const response = await axios.get('/api/clients');
-        setClients(response.data); // Ensure this is an array of client objects
-      } catch (error) {
-        console.error('Error fetching clients:', error.response?.data || error.message);
-      }
-    };
-    
-    fetchData();
-    fetchClients();
-  }, []);
-  
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await axios.get('/api/attendance/attendance');
-        const result = response.data; 
-        setAttendance(result);
-      } catch (error) {
-        console.error('Error fetching attendance:', error);
-      }
-    }
-  
-    fetchData();
-  }, []);
-  
-  const fetchData = async () => {
-    try {
-      const response = await fetch('/api/attendance');
-      const result = await response.json(); 
-      setAgents(Array.isArray(result.data) ? result.data : []);
-    } catch (error) {
-      console.error('Error fetching agents:', error);
-    }
-  }
+  }, [currentWeekStart, fetchAttendance]);
 
-  const createAgent = async () => {
-    
+ const fetchAgentsAndClients = useCallback(async () => {
+  try {
+    const [agentsResponse, clientsResponse] = await Promise.all([
+      fetch('/api/attendance').then((res) => res.json()),
+      axios.get('/api/clients')
+    ]);
+    setAgents(Array.isArray(agentsResponse.data) ? agentsResponse.data : []);
+    setClients(clientsResponse.data);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+}, []);
+
+useEffect(() => {
+  fetchAgentsAndClients();
+}, [fetchAgentsAndClients]);
+  
+  
+  
+  
+
+const createAgent = useCallback(async () => {
+  setLoading(true);
+  try {
     const agentData = {
       name: newAgentName,
       position: newAgentPosition,
-      client: newAgentClient,  
-      wfh: newAgentWfh, 
-    }
-    setLoading(true);
-    try {
-      const response = await axios.post('/api/attendance', agentData); 
-      fetchData(); 
-      setModalnew(false); 
-      setNewAgentWfh(false);
-       setNewAgentClient("");
-        setNewAgentPosition("");
-         setNewAgentName("") ;
-      setLoading(false);
-    } catch (error) {
-      console.error('Error creating agent:', error.response?.data || error.message);
-    }
-  };
+      client: newAgentClient,
+      wfh: newAgentWfh,
+    };
+    await axios.post('/api/attendance', agentData);
+    fetchAgentsAndClients();
+    setModalNew(false);
+    setNewAgentWfh(false);
+    setNewAgentClient('');
+    setNewAgentPosition('');
+    setNewAgentName('');
+  } catch (error) {
+    console.error('Error creating agent:', error.response?.data || error.message);
+  } finally {
+    setLoading(false);
+  }
+}, [newAgentName, newAgentPosition, newAgentClient, newAgentWfh, fetchAgentsAndClients]);
+
   
   const filterPreviousMonths = (date) => {
     const today = new Date();
     return date < new Date(today.getFullYear(), today.getMonth(), 1);
   };
-  
-  const weekDays = getFormattedWeekDays(currentWeekStart);
+   
 
   const handleCellClick = (agent, dayIndex, currentStatus, extraHours) => {
     setSelectedCells([{ agent, dayIndex }]);
@@ -356,57 +331,43 @@ const AttendancePage = () => {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     setLoading(true);
     try {
-      
-         
-            const startOfWeekDate = startOfWeek(new Date(), { weekStartsOn: 1 });  
-            const endOfWeekDate = endOfWeek(new Date(), { weekStartsOn: 1 });
-
-            const currentWeekAttendance = attendance[selectedCells[0].agent._id]?.filter(entry => {
-                const entryDate = new Date(entry.date);
-                return entryDate >= startOfWeekDate && entryDate <= endOfWeekDate;
-            }) || [];
-
-            // Calculate the total existing extra hours for this week
-            const totalExistingExtraHours = currentWeekAttendance.reduce((sum, entry) => sum + (entry.extraHours || 0), 0);
-
-            // Calculate total new extra hours
-            const totalNewExtraHours = selectedCells.reduce((sum, cell) => sum + (extraHours || 0), 0);
-
-            // Check if adding new extra hours would exceed the 8-hour limit
-            if (totalExistingExtraHours + totalNewExtraHours > 8) {
-                alert('Extra hours cannot exceed 8 hours per week.');
-                return;
-            }
-
-            // If validation passes, proceed with submitting the attendance data
-            const attendanceData = selectedCells.map(cell => {
-                const date = weekDays[cell.dayIndex].date;
-                return {
-                    agentId: cell.agent._id,
-                    date: date,
-                    status: status,
-                    client: cell.agent.client,
-                    extraHours: extraHours,
-                };
-            });
-
-            await axios.post('/api/attendance/submit', attendanceData, {
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-            setExtraHours(0) 
-            fetchAttendance(currentWeekStart);
-            setShowModal(false);
-
+      const startOfWeekDate = startOfWeek(new Date(), { weekStartsOn: 1 });
+      const endOfWeekDate = endOfWeek(new Date(), { weekStartsOn: 1 });
+  
+      const currentWeekAttendance = attendance[selectedCells[0].agent._id]?.filter((entry) => {
+        const entryDate = new Date(entry.date);
+        return entryDate >= startOfWeekDate && entryDate <= endOfWeekDate;
+      }) || [];
+  
+      const totalExistingExtraHours = currentWeekAttendance.reduce((sum, entry) => sum + (entry.extraHours || 0), 0);
+      const totalNewExtraHours = selectedCells.reduce((sum) => sum + (extraHours || 0), 0);
+  
+      if (totalExistingExtraHours + totalNewExtraHours > 8) {
+        alert('Extra hours cannot exceed 8 hours per week.');
+        return;
+      }
+  
+      const attendanceData = selectedCells.map((cell) => ({
+        agentId: cell.agent._id,
+        date: weekDays[cell.dayIndex].date,
+        status,
+        client: cell.agent.client,
+        extraHours,
+      }));
+  
+      await axios.post('/api/attendance/submit', attendanceData);
+      await fetchAttendance(currentWeekStart);
+      setShowModal(false);
     } catch (error) {
-        console.error('Error submitting attendance:', error.response ? error.response.data : error.message);
+      console.error('Error submitting attendance:', error);
+    } finally {
+      setLoading(false);
+
     }
-    setLoading(false);
-};
+  }, [attendance, selectedCells, status, extraHours, weekDays]);
 
  
 
@@ -418,14 +379,11 @@ const handleGroupSubmit = async () => {
   if (from > to) {
     alert("The 'From' date cannot be after the 'To' date.");
     setLoading(false);
-  
     return;
-    
   }
 
   const startDate = from;
   const endDate = to;
-
   let currentDate = startDate;
   const attendanceData = [];
 
@@ -446,20 +404,28 @@ const handleGroupSubmit = async () => {
   }
 
   try {
-    const response = await axios.post('/api/attendance/submit', attendanceData, {
+    // Send all attendance data in a single batch request
+    await axios.post('/api/attendance/submit', attendanceData, {
       headers: {
         'Content-Type': 'application/json',
       }
     });
-    fetchAttendance(startOfWeek(from, { weekStartsOn: 1 })); // Update attendance data
+
+    // Fetch updated attendance data
+    await fetchAttendance(currentWeekStart);
+
+    // Reset UI state
     setShowGroupModal(false);
-    setSelectedAgents([])
+    setSelectedAgents([]);
   } catch (error) {
     console.error('Error submitting group attendance:', error.response ? error.response.data : error.message);
     alert('Failed to submit attendance. Please try again later.');
+  } finally {
+    setLoading(false);
   }
-  setLoading(false);
 };
+
+
 
 const handlePreviousWeek = () => setCurrentWeekStart(prev => subWeeks(prev, 1));
 const handleNextWeek = () => setCurrentWeekStart(prev => addWeeks(prev, 1));  
