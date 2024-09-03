@@ -98,14 +98,16 @@ const AttendancePage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (currentWeekStart) {
-        await fetchAttendance(currentWeekStart);
-      }
-      await fetchAgentsAndClients();
+      console.log('Fetching attendance...');
+      await fetchAttendance(currentWeekStart);
+      console.log('Attendance fetched:', attendance);
     };
-
-    fetchData();
-  }, [currentWeekStart, fetchAttendance, fetchAgentsAndClients]);
+    
+    if (currentWeekStart) {
+      fetchData();
+    }
+  }, [currentWeekStart, fetchAttendance]);
+  
   
   
   useEffect(() => {
@@ -538,8 +540,7 @@ return (
             <td className="cell-border" onClick={() => handleAgentNameClick(agent)} style={{ cursor: 'pointer', textDecoration: 'underline' }}>
               {agent.name}
             </td>
-            {
-              console.log('agents: ', agents) }
+            {console.log('agents: ', agents) }
               {console.log('clients: ',clients)}
               {console.log('attendance: ',attendance)}
            
