@@ -52,7 +52,22 @@ const AttendancePage = () => {
   const [extraHours, setExtraHours] = useState(0);
   const weekDays = useMemo(() => getFormattedWeekDays(currentWeekStart), [currentWeekStart]);
 
+  const fetchAgentsAndClients = useCallback(async () => {
+    try {
+      const [agentsResponse, clientsResponse] = await Promise.all([
+        fetch('/api/attendance').then((res) => res.json()),
+        axios.get('/api/clients')
+      ]);
+      setAgents(Array.isArray(agentsResponse.data) ? agentsResponse.data : []);
+      setClients(clientsResponse.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  }, []);
 
+useEffect(() => {
+  fetchAgentsAndClients();
+}, [fetchAgentsAndClients]);
   const fetchAttendance = useCallback(async (weekStart) => {
     try {
       if (!weekStart || isNaN(new Date(weekStart).getTime())) {
@@ -86,22 +101,7 @@ const AttendancePage = () => {
     }
   }, [currentWeekStart, fetchAttendance]);
 
-  const fetchAgentsAndClients = useCallback(async () => {
-    try {
-      const [agentsResponse, clientsResponse] = await Promise.all([
-        fetch('/api/attendance').then((res) => res.json()),
-        axios.get('/api/clients')
-      ]);
-      setAgents(Array.isArray(agentsResponse.data) ? agentsResponse.data : []);
-      setClients(clientsResponse.data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  }, []);
-
-useEffect(() => {
-  fetchAgentsAndClients();
-}, [fetchAgentsAndClients]);
+  
   
   
   
@@ -532,8 +532,22 @@ return (
             
             weekDays.map(({ date }, index) => {
               const entry = attendance[agent._id]?.find(entry => entry.date === date);
-              console.log(entry)
              
+              const currentStatus = entry.status || 'N/A';
+              const extraHours = entry?.extraHours || 0; 
+              console.log(`Date: ${date}, Agent: ${agent.name}, Current Status: ${currentStatus}, Extra Hours: ${extraHours}`);
+
+              return (
+                <td
+                  key={index}
+                  style={{ backgroundColor: getStatusColor(currentStatus), cursor: 'pointer' }}
+                  onClick={() => handleCellClick(agent, index, currentStatus,extraHours )}
+                  className="cell-border"
+                >
+                  {getStatusText(currentStatus)} <br/>
+                  {extraHours > 0 && <span>Extra Hours: {extraHours}</span>}
+                </td>
+              );
             })
              
             }
