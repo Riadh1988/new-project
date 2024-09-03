@@ -528,15 +528,17 @@ return (
             <td className="cell-border" onClick={() => handleAgentNameClick(agent)} style={{ cursor: 'pointer', textDecoration: 'underline' }}>
               {agent.name}
             </td>
-
+{console.log('attendance ', attendance)}
             {
+              
             
             weekDays.map(({ date }, index) => {
+
               const entry = attendance[agent._id]?.find(entry => entry.date === date);
               const currentStatus = entry?.status || 'N/A';
               const extraHours = entry?.extraHours || 0; 
               console.log(`Date: ${date}, Agent: ${agent.name}, Current Status: ${currentStatus}, Extra Hours: ${extraHours}`);
-
+              
               return (
                 <td
                   key={index}
