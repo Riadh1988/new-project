@@ -9,7 +9,7 @@ export default async function handler(req, res) {
 
     try {
       // Fetch all attendance records
-      const attendanceRecords = await Attendance.find().populate('agentId');
+      const attendanceRecords = await Attendance.find();
 
       console.log('Fetched Attendance Records:', attendanceRecords);
 
