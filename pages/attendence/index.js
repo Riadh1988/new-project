@@ -533,7 +533,6 @@ return (
             weekDays.map(({ date }, index) => {
               const entry = attendance[agent._id]?.find(entry => entry.date === date);
               console.log(entry)
-              console.log(entry.date)
               const currentStatus = entry.status || 'N/A';
               const extraHours = entry?.extraHours || 0; 
               console.log(`Date: ${date}, Agent: ${agent.name}, Current Status: ${currentStatus}, Extra Hours: ${extraHours}`);
