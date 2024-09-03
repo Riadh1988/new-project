@@ -53,14 +53,21 @@ const AttendancePage = () => {
   const weekDays = useMemo(() => getFormattedWeekDays(currentWeekStart), [currentWeekStart]);
 
 
-  const fetchAttendance = useCallback(async (weekStart) => {
+  const fetchAttendance = async (weekStart) => {
     try {
+      // Validate weekStart
       if (!weekStart || isNaN(new Date(weekStart).getTime())) {
         console.error('Invalid weekStart:', weekStart);
         return;
       }
+  
+      // Set loading state
       setLoading(true);
-      const { data } = await axios.get(`/api/attendance/w/${weekStart.toISOString()}`);
+  
+      // Make API request
+      const { data } = await axios.get(`/api/attendance/w/${new Date(weekStart).toISOString()}`);
+      
+      // Process the data
       const attendanceData = data.reduce((acc, record) => {
         if (!acc[record.agentId._id]) {
           acc[record.agentId._id] = [];
@@ -72,13 +79,17 @@ const AttendancePage = () => {
         });
         return acc;
       }, {});
+  
+      // Update state with the processed data
       setAttendance(attendanceData);
+  
     } catch (error) {
       console.error('Error fetching attendance:', error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
+  
    
   useEffect(() => {
     if (currentWeekStart) {
