@@ -532,7 +532,7 @@ return (
             
             weekDays.map(({ date }, index) => {
               const entry = attendance[agent._id]?.find(entry => entry.date === date);
-              const currentStatus = entry?.status || 'N/A';
+              const currentStatus = entry?.status ;
               const extraHours = entry?.extraHours || 0; 
         
               return (
