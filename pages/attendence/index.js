@@ -55,26 +55,31 @@ const AttendancePage = () => {
 
   
   
+ 
 
-  const fetchAttendance = useCallback(async (weekStart) => {
-    try {
-      if (!weekStart || isNaN(new Date(weekStart).getTime())) {
-        console.error('Invalid weekStart:', weekStart);
-        return;
-      }
-      setLoading(true);
-  
-      const { data } = await axios.get(`/api/attendance/w/${weekStart.toISOString()}`);
-  
-      // Since data is now already in the correct format, we don't need to transform it
-      setAttendance(data);
-      
-    } catch (error) {
-      console.error('Error fetching attendance:', error);
-    } finally {
-      setLoading(false);
+const fetchAttendance = useCallback(async (weekStart) => {
+  try {
+    if (!weekStart || isNaN(new Date(weekStart).getTime())) {
+      console.error('Invalid weekStart:', weekStart);
+      return;
     }
-  }, []);
+    setLoading(true);
+
+    // Assurez-vous que weekStart est le début de la semaine
+    const startOfWeekDate = startOfWeek(weekStart, { weekStartsOn: 1 });
+    // Format the date as 'YYYY-MM-DD'
+    const formattedWeekStart = format(startOfWeekDate, 'yyyy-MM-dd');
+
+    const { data } = await axios.get(`/api/attendance/w/${formattedWeekStart}`);
+
+    setAttendance(data);
+    
+  } catch (error) {
+    console.error('Error fetching attendance:', error);
+  } finally {
+    setLoading(false);
+  }
+}, []);
   
 
   const fetchAgentsAndClients = useCallback(async () => {
