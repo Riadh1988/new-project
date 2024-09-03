@@ -63,25 +63,19 @@ const AttendancePage = () => {
         return;
       }
       setLoading(true);
+  
       const { data } = await axios.get(`/api/attendance/w/${weekStart.toISOString()}`);
-      const attendanceData = data.reduce((acc, record) => {
-        if (!acc[record.agentId._id]) {
-          acc[record.agentId._id] = [];
-        }
-        acc[record.agentId._id].push({
-          date: format(new Date(record.date), 'yyyy-MM-dd'),
-          status: record.status,
-          extraHours: record.extraHours,
-        });
-        return acc;
-      }, {});
-      setAttendance(attendanceData);
+  
+      // Since data is now already in the correct format, we don't need to transform it
+      setAttendance(data);
+      
     } catch (error) {
       console.error('Error fetching attendance:', error);
     } finally {
       setLoading(false);
     }
   }, []);
+  
 
   const fetchAgentsAndClients = useCallback(async () => {
     try {
