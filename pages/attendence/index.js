@@ -51,7 +51,10 @@ const AttendancePage = () => {
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [extraHours, setExtraHours] = useState(0);
   const weekDays = useMemo(() => getFormattedWeekDays(currentWeekStart), [currentWeekStart]);
+  const [delayedRendering, setDelayedRendering] = useState(false);
 
+  
+  
 
   const fetchAttendance = useCallback(async (weekStart) => {
     try {
@@ -105,7 +108,14 @@ const AttendancePage = () => {
   }, [currentWeekStart, fetchAttendance, fetchAgentsAndClients]);
   
   
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDelayedRendering(true);
+    }, 1000); // 1-second delay
   
+    // Cleanup timer if component unmounts
+    return () => clearTimeout(timer);
+  }, [fetchAttendance]); // Empty dependency array to run only once on mount
   
 
 const createAgent = useCallback(async () => {
@@ -528,31 +538,25 @@ return (
             <td className="cell-border" onClick={() => handleAgentNameClick(agent)} style={{ cursor: 'pointer', textDecoration: 'underline' }}>
               {agent.name}
             </td>
-{console.log('attendance ', attendance)}
-            {
-              
-            
-            weekDays.map(({ date }, index) => {
+            {delayedRendering && weekDays.map(({ date }, index) => {
+  const entry = attendance[agent._id]?.find(entry => entry.date === date);
+  const currentStatus = entry?.status || 'N/A';
+  const extraHours = entry?.extraHours || 0;
 
-              const entry = attendance[agent._id]?.find(entry => entry.date === date);
-              const currentStatus = entry?.status || 'N/A';
-              const extraHours = entry?.extraHours || 0; 
-              console.log(`Date: ${date}, Agent: ${agent.name}, Current Status: ${currentStatus}, Extra Hours: ${extraHours}`);
-              
-              return (
-                <td
-                  key={index}
-                  style={{ backgroundColor: getStatusColor(currentStatus), cursor: 'pointer' }}
-                  onClick={() => handleCellClick(agent, index, currentStatus,extraHours )}
-                  className="cell-border"
-                >
-                  {getStatusText(currentStatus)} <br/>
-                  {extraHours > 0 && <span>Extra Hours: {extraHours}</span>}
-                </td>
-              );
-            })
-             
-            }
+   
+  return (
+    <td
+      key={index}
+      style={{ backgroundColor: getStatusColor(currentStatus), cursor: 'pointer' }}
+      onClick={() => handleCellClick(agent, index, currentStatus, extraHours)}
+      className="cell-border"
+    >
+      {getStatusText(currentStatus)} <br />
+      {extraHours > 0 && <span>Extra Hours: {extraHours}</span>}
+    </td>
+  );
+})}
+
           </tr>
         ))
         }
