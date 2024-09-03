@@ -534,14 +534,16 @@ return (
               const entry = attendance[agent._id]?.find(entry => entry.date === date);
               const currentStatus = entry?.status || 'N/A';
               const extraHours = entry?.extraHours || 0; 
-        
+              console.log(`Date: ${date}, Agent: ${agent.name}, Current Status: ${currentStatus}, Extra Hours: ${extraHours}`);
+
               return (
                 <td
                   key={index}
+                  style={{ backgroundColor: getStatusColor(currentStatus), cursor: 'pointer' }}
                   onClick={() => handleCellClick(agent, index, currentStatus,extraHours )}
                   className="cell-border"
                 >
-                  {currentStatus} <br/>
+                  {getStatusText(currentStatus)} <br/>
                   {extraHours > 0 && <span>Extra Hours: {extraHours}</span>}
                 </td>
               );
