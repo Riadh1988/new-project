@@ -538,6 +538,11 @@ return (
             <td className="cell-border" onClick={() => handleAgentNameClick(agent)} style={{ cursor: 'pointer', textDecoration: 'underline' }}>
               {agent.name}
             </td>
+            {
+              console.log('agents: ', agents) }
+              {console.log('clients: ',clients)}
+              {console.log('attendance: ',attendance)}
+           
             {delayedRendering && weekDays.map(({ date }, index) => {
   const entry = attendance[agent._id]?.find(entry => entry.date === date);
   const currentStatus = entry?.status || 'N/A';
