@@ -11,29 +11,34 @@ export default async function handler(req, res) {
     const startDate = startOfWeek(new Date(week), { weekStartsOn: 1 });
     const endDate = endOfWeek(new Date(week), { weekStartsOn: 1 });
 
+    console.log('Fetching attendance records between:', startDate, 'and', endDate);
+
     try {
       const attendanceRecords = await Attendance.find({
         date: { $gte: startDate, $lte: endDate }
       }).populate('agentId');
 
-      // Transform records into the desired format
+      console.log('Attendance Records:', attendanceRecords);
+
       const attendanceData = attendanceRecords.reduce((acc, record) => {
-        const agentId = record.agentId._id.toString(); // Ensure the ID is a string
+        const agentId = record.agentId._id.toString();
         if (!acc[agentId]) {
           acc[agentId] = [];
         }
         acc[agentId].push({
-          date: record.date.toISOString().split('T')[0], // Format date as 'YYYY-MM-DD'
+          date: record.date.toISOString().split('T')[0],
           status: record.status,
           extraHours: record.extraHours,
         });
-        
+
         return acc;
       }, {});
 
-      res.status(200).json(attendanceData);console.log('attendanceData: ', attendanceData)
-      
+      console.log('Transformed Attendance Data:', attendanceData);
+
+      res.status(200).json(attendanceData);
     } catch (error) {
+      console.error('Error fetching attendance records:', error);
       res.status(500).json({ error: 'Failed to fetch attendance records' });
     }
   }
