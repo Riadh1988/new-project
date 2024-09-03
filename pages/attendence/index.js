@@ -52,22 +52,7 @@ const AttendancePage = () => {
   const [extraHours, setExtraHours] = useState(0);
   const weekDays = useMemo(() => getFormattedWeekDays(currentWeekStart), [currentWeekStart]);
 
-  const fetchAgentsAndClients = useCallback(async () => {
-    try {
-      const [agentsResponse, clientsResponse] = await Promise.all([
-        fetch('/api/attendance').then((res) => res.json()),
-        axios.get('/api/clients')
-      ]);
-      setAgents(Array.isArray(agentsResponse.data) ? agentsResponse.data : []);
-      setClients(clientsResponse.data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  }, []);
 
-useEffect(() => {
-  fetchAgentsAndClients();
-}, [fetchAgentsAndClients]);
   const fetchAttendance = useCallback(async (weekStart) => {
     try {
       if (!weekStart || isNaN(new Date(weekStart).getTime())) {
@@ -95,13 +80,29 @@ useEffect(() => {
     }
   }, []);
 
-  useEffect(() => {
-    if (currentWeekStart) {
-      fetchAttendance(currentWeekStart);
+  const fetchAgentsAndClients = useCallback(async () => {
+    try {
+      const [agentsResponse, clientsResponse] = await Promise.all([
+        fetch('/api/attendance').then((res) => res.json()),
+        axios.get('/api/clients')
+      ]);
+      setAgents(Array.isArray(agentsResponse.data) ? agentsResponse.data : []);
+      setClients(clientsResponse.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
     }
-  }, [currentWeekStart, fetchAttendance]);
+  }, []);
 
-  
+  useEffect(() => {
+    const fetchData = async () => {
+      if (currentWeekStart) {
+        await fetchAttendance(currentWeekStart);
+      }
+      await fetchAgentsAndClients();
+    };
+
+    fetchData();
+  }, [currentWeekStart, fetchAttendance, fetchAgentsAndClients]);
   
   
   
@@ -532,8 +533,7 @@ return (
             
             weekDays.map(({ date }, index) => {
               const entry = attendance[agent._id]?.find(entry => entry.date === date);
-             
-              const currentStatus = entry.status || 'N/A';
+              const currentStatus = entry?.status || 'N/A';
               const extraHours = entry?.extraHours || 0; 
               console.log(`Date: ${date}, Agent: ${agent.name}, Current Status: ${currentStatus}, Extra Hours: ${extraHours}`);
 
