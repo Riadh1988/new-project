@@ -82,9 +82,15 @@ const AttendancePage = () => {
    
   useEffect(() => {
     if (currentWeekStart) {
-      fetchAttendance(currentWeekStart);
+      const fetchData = async () => {
+        setLoading(true);
+        await fetchAttendance(currentWeekStart);
+        setLoading(false);
+      };
+  
+      fetchData();
     }
-  }, [currentWeekStart, fetchAttendance]);
+  }, [currentWeekStart]);
 
  const fetchAgentsAndClients = useCallback(async () => {
   try {
@@ -532,7 +538,7 @@ return (
             
             weekDays.map(({ date }, index) => {
               const entry = attendance[agent._id]?.find(entry => entry.date === date);
-              const currentStatus = entry?.status ;
+              const currentStatus = entry?.status || 'N/A';
               const extraHours = entry?.extraHours || 0; 
         
               return (
