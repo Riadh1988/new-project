@@ -27,10 +27,12 @@ export default async function handler(req, res) {
           status: record.status,
           extraHours: record.extraHours,
         });
+        
         return acc;
       }, {});
 
-      res.status(200).json(attendanceData);
+      res.status(200).json(attendanceData);console.log('attendanceData: ', attendanceData)
+      
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch attendance records' });
     }
