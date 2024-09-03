@@ -101,7 +101,9 @@ const AttendancePage = () => {
       console.log('Fetching attendance...');
       await fetchAttendance(currentWeekStart);
       console.log('Attendance fetched:', attendance);
+      await fetchAgentsAndClients();
     };
+
     
     if (currentWeekStart) {
       fetchData();
