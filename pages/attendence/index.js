@@ -59,11 +59,8 @@ const AttendancePage = () => {
         console.error('Invalid weekStart:', weekStart);
         return;
       }
-      console.log('Fetching attendance for week starting on:', weekStart);
       setLoading(true);
       const { data } = await axios.get(`/api/attendance/w/${weekStart.toISOString()}`);
-      console.log('Fetched attendance data:', data);
-
       const attendanceData = data.reduce((acc, record) => {
         if (!acc[record.agentId._id]) {
           acc[record.agentId._id] = [];
@@ -75,8 +72,6 @@ const AttendancePage = () => {
         });
         return acc;
       }, {});
-
-      console.log('Processed attendance data:', attendanceData);
       setAttendance(attendanceData);
     } catch (error) {
       console.error('Error fetching attendance:', error);
@@ -84,34 +79,26 @@ const AttendancePage = () => {
       setLoading(false);
     }
   }, []);
-
+   
   useEffect(() => {
     if (currentWeekStart) {
       fetchAttendance(currentWeekStart);
     }
   }, [currentWeekStart, fetchAttendance]);
 
-  const fetchAgentsAndClients = useCallback(async () => {
-    try {
-      console.log('Fetching agents and clients');
-      const [agentsResponse, clientsResponse] = await Promise.all([
-        fetch('/api/attendance').then((res) => res.json()),
-        axios.get('/api/clients')
-      ]);
+ const fetchAgentsAndClients = useCallback(async () => {
+  try {
+    const [agentsResponse, clientsResponse] = await Promise.all([
+      fetch('/api/attendance').then((res) => res.json()),
+      axios.get('/api/clients')
+    ]);
+    setAgents(Array.isArray(agentsResponse.data) ? agentsResponse.data : []);
+    setClients(clientsResponse.data);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+}, []);
 
-      console.log('Fetched agents:', agentsResponse.data);
-      console.log('Fetched clients:', clientsResponse.data);
-
-      setAgents(Array.isArray(agentsResponse.data) ? agentsResponse.data : []);
-      setClients(clientsResponse.data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchAgentsAndClients();
-  }, [fetchAgentsAndClients]);
 useEffect(() => {
   fetchAgentsAndClients();
 }, [fetchAgentsAndClients]);
@@ -503,65 +490,70 @@ return (
         </div>
     
    
-    <div className="grid-container">
-  <div className="grid-header">
-    <div>
-      <input 
+    <table>
+      <thead>
+        <tr>
+          <th>
+          <input 
         type="checkbox" 
         onChange={handleSelectAllAgents} 
         checked={selectedAgents.length === filteredAgents.length && filteredAgents.length > 0} 
       />
-    </div>
-    <div>Agent</div>
-    {weekDays.map(({ dayName, formattedDate }) => (
-      <div key={dayName}>{`${dayName} (${formattedDate})`}</div>
-    ))}
-  </div>
+          </th>
+          <th>Agent</th>
+          {weekDays.map(({ dayName, formattedDate }) => (
+            <th key={dayName}>{`${dayName} (${formattedDate})`}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {
+        Loading ? (
+            <tr>
+              <td colSpan={weekDays.length + 2}>
+                <Loader />
+              </td>
+            </tr>
+          ) :
+        filteredAgents.map((agent) => (
+          <tr key={agent._id}>
+            <td className="cell-border">
+              <input 
+                type="checkbox" 
+                checked={selectedAgents.includes(agent)}
+                onChange={() => toggleAgentSelection(agent)}
+              />
+            </td>
+            <td className="cell-border" onClick={() => handleAgentNameClick(agent)} style={{ cursor: 'pointer', textDecoration: 'underline' }}>
+              {agent.name}
+            </td>
 
-  <div className="grid-body">
-    {Loading ? (
-      <div className="grid-row">
-        <div className="grid-cell loader" colSpan={weekDays.length + 2}>
-          <Loader />
-        </div>
-      </div>
-    ) : (
-      filteredAgents.map((agent) => (
-        <div key={agent._id} className="grid-row">
-          <div className="grid-cell cell-border">
-            <input 
-              type="checkbox" 
-              checked={selectedAgents.includes(agent)}
-              onChange={() => toggleAgentSelection(agent)}
-            />
-          </div>
-          <div className="grid-cell cell-border" onClick={() => handleAgentNameClick(agent)} style={{ cursor: 'pointer', textDecoration: 'underline' }}>
-            {agent.name}
-          </div>
-
-          {weekDays.map(({ date }, index) => {
-            const entry = attendance[agent._id]?.find(entry => entry.date === date);
-            const currentStatus = entry?.status || 'N/A';
-            const extraHours = entry?.extraHours || 0;
-
-            return (
-              <div
-                key={index}
-                className="grid-cell cell-border"
-                style={{ backgroundColor: getStatusColor(currentStatus), cursor: 'pointer' }}
-                onClick={() => handleCellClick(agent, index, currentStatus, extraHours)}
-              >
-                {getStatusText(currentStatus)} <br />
-                {extraHours > 0 && <span>Extra Hours: {extraHours}</span>}
-              </div>
-            );
-          })}
-        </div>
-      ))
-    )}
-  </div>
-</div>
-
+            {
+            
+            weekDays.map(({ date }, index) => {
+              const entry = attendance[agent._id]?.find(entry => entry.date === date);
+              const currentStatus = entry?.status || 'N/A';
+              const extraHours = entry?.extraHours || 0; 
+        
+              return (
+                <td
+                  key={index}
+                  style={{ backgroundColor: getStatusColor(currentStatus), cursor: 'pointer' }}
+                  onClick={() => handleCellClick(agent, index, currentStatus,extraHours )}
+                  className="cell-border"
+                >
+                  {getStatusText(currentStatus)} <br/>
+                  {extraHours > 0 && <span>Extra Hours: {extraHours}</span>}
+                </td>
+              );
+            })
+             
+            }
+          </tr>
+        ))
+        }
+      </tbody>
+    </table>
     
     <Modal show={showAgentModal}  addition='addit-mod'>
       {
