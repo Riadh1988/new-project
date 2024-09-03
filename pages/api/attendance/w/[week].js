@@ -1,21 +1,27 @@
-// pages/api/attendance/w/[week].js
 import { mongooseConnect } from '@/lib/mongoose';
 import Attendance from '@/models/Attendance';
-import { startOfWeek, endOfWeek } from 'date-fns';
+import { startOfWeek, endOfWeek, formatISO } from 'date-fns';
 
 export default async function handler(req, res) {
   await mongooseConnect();
 
   if (req.method === 'GET') {
     const { week } = req.query;
-    const startDate = startOfWeek(new Date(week), { weekStartsOn: 1 });
-    const endDate = endOfWeek(new Date(week), { weekStartsOn: 1 });
 
-    console.log('Fetching attendance records between:', startDate, 'and', endDate);
+    // Parse week date and ensure it's in UTC
+    const weekDate = new Date(week);
+    const startDate = startOfWeek(weekDate, { weekStartsOn: 1 });
+    const endDate = endOfWeek(weekDate, { weekStartsOn: 1 });
+
+    // Convert to ISO strings without time component to avoid timezone issues
+    const startISO = formatISO(startDate, { representation: 'date' });
+    const endISO = formatISO(endDate, { representation: 'date' });
+
+    console.log('Fetching attendance records between:', startISO, 'and', endISO);
 
     try {
       const attendanceRecords = await Attendance.find({
-        date: { $gte: startDate, $lte: endDate }
+        date: { $gte: startISO, $lte: endISO }
       }).populate('agentId');
 
       console.log('Attendance Records:', attendanceRecords);
