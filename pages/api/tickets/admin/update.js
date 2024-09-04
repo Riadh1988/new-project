@@ -12,19 +12,19 @@ export default async function handler(req, res) {
     }
 
     try {
-      const ticket = await Ticket.findById(id);
+      const ticket = await Ticket.findByIdAndUpdate(
+        id,
+        { $set: { status: status } },
+        { new: true, runValidators: true }
+      );
 
       if (!ticket) {
         return res.status(404).json({ message: 'Ticket not found' });
       }
 
-      ticket.status = status;
-      await ticket.save();
-
       res.status(200).json({ message: 'Ticket status updated successfully', data: ticket });
     } catch (error) {
       console.error('Error updating ticket:', error);
-      // Log more details about the error
       console.error('Error stack:', error.stack);
       console.error('Request body:', req.body);
       res.status(500).json({ message: 'Error updating ticket', error: error.message, stack: error.stack });
