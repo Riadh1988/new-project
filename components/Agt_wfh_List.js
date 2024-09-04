@@ -58,6 +58,7 @@ const ClientList = ({ clients, onReturned }) => {
           <li key={index} className="per-li">
             <span 
               className="client-name"
+              onClick={() => handleClientClick(client)}
             >
               {client.candidateName} {client.lastName}
             </span>

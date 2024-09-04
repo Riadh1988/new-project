@@ -24,7 +24,10 @@ export default async function handler(req, res) {
       res.status(200).json({ message: 'Ticket status updated successfully', data: ticket });
     } catch (error) {
       console.error('Error updating ticket:', error);
-      res.status(500).json({ message: 'Error updating ticket', error: error.message });
+      // Log more details about the error
+      console.error('Error stack:', error.stack);
+      console.error('Request body:', req.body);
+      res.status(500).json({ message: 'Error updating ticket', error: error.message, stack: error.stack });
     }
   } else {
     res.setHeader('Allow', ['PATCH']);
